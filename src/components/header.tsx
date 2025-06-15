@@ -18,20 +18,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import Link from "next/link";
 import { RepoButton } from "./repo-button";
 import { ColorModeToggle } from "./color-mode-toggle";
-import SignIn from "@/features/auth/components/sign-in";
-import SignOut from "@/features/auth/components/sign-out";
 
-export function Header({
-  onSignIn,
-  onSignOut,
-  isAuthenticated,
-  username,
-}: {
-  onSignIn?: () => Promise<void>;
-  onSignOut?: () => Promise<void>;
-  isAuthenticated?: boolean;
-  username?: string;
-}) {
+export function Header() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -139,22 +127,8 @@ export function Header({
         </>
       ) : (
         <Box sx={{ display: "flex", gap: 2 }}>
-          <ColorModeToggle />
           <RepoButton />
-          {isAuthenticated ? (
-            <p>
-              Hello, {username},
-              <SignOut
-                onSignOut={onSignOut}
-              />
-            </p>
-          ) : (
-            <p>
-              <SignIn
-                onSignIn={onSignIn}
-              />
-            </p>
-          )}
+          <ColorModeToggle />
         </Box>
       )}
     </Box>
