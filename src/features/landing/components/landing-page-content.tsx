@@ -13,6 +13,8 @@ import Image from "next/image";
 import FAQ from "./faq";
 import { ArrowForward } from "@mui/icons-material";
 import InfoBox from "@/components/info-box";
+import { CtaButton } from "@/components/cta-button";
+import Link from "next/link";
 
 export default function LandingPageContent() {
   const theme = useTheme();
@@ -56,18 +58,11 @@ export default function LandingPageContent() {
                   size="large"
                   color="secondary"
                   href="/dashboard/demo"
+                  LinkComponent={Link}
                 >
                   Ausprobieren
                 </Button>
-                <Button
-                  variant="contained"
-                  size="large"
-                  color="secondary"
-                  href="/dashboard"
-                  endIcon={<ArrowForward fontSize="small" />}
-                >
-                  Loslegen
-                </Button>
+                <CtaButton />
               </Stack>
             </Stack>
           </Grid>

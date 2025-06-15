@@ -11,6 +11,7 @@ import {
   List,
   ListItem,
   Divider,
+  Button,
 } from "@mui/material";
 import AnalyticsIcon from "@mui/icons-material/Analytics";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -19,21 +20,28 @@ import Link from "next/link";
 import { RepoButton } from "./repo-button";
 import { ColorModeToggle } from "./color-mode-toggle";
 import SignIn from "@/features/auth/components/sign-in";
-import SignOut from "@/features/auth/components/sign-out";
+import { ArrowForward } from "@mui/icons-material";
+import { usePathname } from "next/navigation";
+import ProfileMenu from "@/features/auth/components/profile";
+import { CtaButton } from "./cta-button";
 
 export function Header({
   onSignIn,
   onSignOut,
+  onDeleteAccount,
   isAuthenticated,
   username,
 }: {
   onSignIn?: () => Promise<void>;
   onSignOut?: () => Promise<void>;
+  onDeleteAccount?: () => void;
   isAuthenticated?: boolean;
   username?: string;
 }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const pathname = usePathname();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -141,19 +149,17 @@ export function Header({
         <Box sx={{ display: "flex", gap: 2 }}>
           <ColorModeToggle />
           <RepoButton />
+          {pathname !== "/dashboard" && (
+            <CtaButton/>
+          )}
           {isAuthenticated ? (
-            <p>
-              Hello, {username},
-              <SignOut
-                onSignOut={onSignOut}
-              />
-            </p>
+            <ProfileMenu
+              username={username}
+              onLogout={onSignOut}
+              onDeleteAccount={onDeleteAccount}
+            />
           ) : (
-            <p>
-              <SignIn
-                onSignIn={onSignIn}
-              />
-            </p>
+            <SignIn onSignIn={onSignIn} />
           )}
         </Box>
       )}

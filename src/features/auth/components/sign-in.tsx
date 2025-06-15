@@ -9,9 +9,12 @@ type Props = {
 const SignIn = ({ onSignIn }: Props) => {
   return (
     <Button
+      variant="outlined"
+      color="secondary"
       onClick={onSignIn}
+      size="large"
     >
-      Sign In
+      Anmelden
     </Button>
   );
 };
