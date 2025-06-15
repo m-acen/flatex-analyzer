@@ -139,8 +139,8 @@ export function Header({
         </>
       ) : (
         <Box sx={{ display: "flex", gap: 2 }}>
-          <RepoButton />
           <ColorModeToggle />
+          <RepoButton />
           {isAuthenticated ? (
             <p>
               Hello, {username},
