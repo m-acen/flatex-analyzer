@@ -13,8 +13,8 @@ import theme from "@/theme";
 
 type ProfileMenuProps = {
   username: string;
-  onLogout: () => void;
-  onDeleteAccount: () => void;
+  onLogout: () => Promise<void>;
+  onDeleteAccount: () => Promise<void>;
 };
 
 const ProfileMenu: React.FC<ProfileMenuProps> = ({
@@ -35,7 +35,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
 
   const getInitial = (name: string) => name?.charAt(0).toUpperCase() || "?";
 
-  const color = theme.palette.secondary.main;
+  const color = theme.palette.primary.main;
 
   return (
     <>
@@ -82,18 +82,26 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
           horizontal: "right",
         }}
       >
-        <MenuItem onClick={onDeleteAccount}>
+        <MenuItem
+          onClick={async () => {
+            await onDeleteAccount();
+          }}
+        >
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
           </ListItemIcon>
-          Delete Account
+          Konto l&ouml;schen
         </MenuItem>
         <Divider />
-        <MenuItem onClick={onLogout}>
+        <MenuItem
+          onClick={async () => {
+            await onLogout();
+          }}
+        >
           <ListItemIcon>
             <LogoutIcon fontSize="small" />
           </ListItemIcon>
-          Logout
+          Abmelden
         </MenuItem>
       </Menu>
     </>

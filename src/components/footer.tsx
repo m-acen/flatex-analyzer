@@ -12,6 +12,7 @@ export function Footer() {
       component="footer"
       display="flex"
       flexDirection="row"
+      flexWrap={"wrap"}
       justifyContent="space-between"
       alignItems="center"
       sx={(theme) => ({

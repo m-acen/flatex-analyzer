@@ -1,16 +1,17 @@
-'use client';
+"use client";
 
 import { Button } from "@mui/material";
 
-type Props = {
-  onSignIn: () => Promise<void>;
-};
+interface Props extends React.ComponentProps<typeof Button> {
+  onSignIn: () => void;
+}
 
-const SignIn = ({ onSignIn }: Props) => {
+const SignIn = ({ onSignIn, ...props }: Props) => {
   return (
     <Button
+      {...props}
       variant="outlined"
-      color="secondary"
+      color="primary"
       onClick={onSignIn}
       size="large"
     >

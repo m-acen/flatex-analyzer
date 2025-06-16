@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import ClientWrapper from "@/components/client-wrapper";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import AuthDialog from "@/features/auth/components/auth-dialog";
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],

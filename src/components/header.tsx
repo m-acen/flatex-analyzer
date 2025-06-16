@@ -19,30 +19,14 @@ import CloseIcon from "@mui/icons-material/Close";
 import Link from "next/link";
 import { RepoButton } from "./repo-button";
 import { ColorModeToggle } from "./color-mode-toggle";
-import SignIn from "@/features/auth/components/sign-in";
-import { ArrowForward } from "@mui/icons-material";
 import { usePathname } from "next/navigation";
-import ProfileMenu from "@/features/auth/components/profile";
 import { CtaButton } from "./cta-button";
+import { AuthSwitch, MobileAuthSwitch } from "@/features/auth/components/auth-switch";
 
-export function Header({
-  onSignIn,
-  onSignOut,
-  onDeleteAccount,
-  isAuthenticated,
-  username,
-}: {
-  onSignIn?: () => Promise<void>;
-  onSignOut?: () => Promise<void>;
-  onDeleteAccount?: () => void;
-  isAuthenticated?: boolean;
-  username?: string;
-}) {
+export function Header() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
   const pathname = usePathname();
-
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const toggleDrawer = (open) => (event) => {
@@ -57,10 +41,13 @@ export function Header({
 
   const drawerContent = (
     <Box
-      sx={{ width: 250 }}
+      sx={{
+        width: 250,
+        height: "100svh", // Ensure it doesn't grow beyond the viewport
+        display: "flex",
+        flexDirection: "column",
+      }}
       role="presentation"
-      onClick={toggleDrawer(false)}
-      onKeyDown={toggleDrawer(false)}
     >
       <Box
         sx={{
@@ -79,7 +66,7 @@ export function Header({
             alignItems: "center",
           }}
         >
-          <AnalyticsIcon fontSize="medium" color="secondary" />
+          <AnalyticsIcon fontSize="medium" color="primary" />
           <Typography variant="body1" color="text.primary">
             Flatex Analyzer
           </Typography>
@@ -89,12 +76,29 @@ export function Header({
         </IconButton>
       </Box>
       <Divider />
-      <List>
+      <List
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+        }}
+      >
         <ListItem>
           <RepoButton fullWidth />
         </ListItem>
         <ListItem>
           <ColorModeToggle fullWidth />
+        </ListItem>
+
+        <Box sx={{ flexGrow: 1 }} />
+
+        <ListItem>
+          <Box
+            onClick={(e) => e.stopPropagation()}
+            sx={{ width: "100%" }} // ensures full width if needed
+          >
+            <MobileAuthSwitch />
+          </Box>
         </ListItem>
       </List>
     </Box>
@@ -121,7 +125,7 @@ export function Header({
           alignItems: "center",
         }}
       >
-        <AnalyticsIcon fontSize="large" color="secondary" />
+        <AnalyticsIcon fontSize="large" color="primary" />
         <Typography variant="h6" color="text.primary">
           Flatex Analyzer
         </Typography>
@@ -149,18 +153,8 @@ export function Header({
         <Box sx={{ display: "flex", gap: 2 }}>
           <ColorModeToggle />
           <RepoButton />
-          {pathname !== "/dashboard" && (
-            <CtaButton/>
-          )}
-          {isAuthenticated ? (
-            <ProfileMenu
-              username={username}
-              onLogout={onSignOut}
-              onDeleteAccount={onDeleteAccount}
-            />
-          ) : (
-            <SignIn onSignIn={onSignIn} />
-          )}
+          {pathname !== "/dashboard" && <CtaButton />}
+          <AuthSwitch />
         </Box>
       )}
     </Box>

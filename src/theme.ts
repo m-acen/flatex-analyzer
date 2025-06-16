@@ -1,5 +1,5 @@
 "use client";
-import { orange } from "@mui/material/colors";
+import { blue, orange } from "@mui/material/colors";
 import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
@@ -7,13 +7,15 @@ const theme = createTheme({
     light: {
       palette: {
         mode: "light",
-        secondary: { main: orange[800] },
+        primary: { main: orange[800] },
+        secondary: { main: blue[600] },
       },
     },
     dark: {
       palette: {
         mode: "dark",
-        secondary: { main: orange[400] },
+        primary: { main: orange[400] },
+        secondary: { main: blue[300] },
       },
     },
   },

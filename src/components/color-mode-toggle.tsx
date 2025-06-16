@@ -20,7 +20,7 @@ export function ColorModeToggle(props: React.ComponentProps<typeof ToggleButtonG
         onChange={handleChange}
         size="small"
         aria-label="theme mode"
-        color="secondary"
+        color="primary"
     >
         <ToggleButton value="light" aria-label="light mode">
             <LightModeIcon />

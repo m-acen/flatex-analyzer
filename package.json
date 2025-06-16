@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@auth/drizzle-adapter": "^1.9.1",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -22,12 +21,12 @@
     "@next/mdx": "^15.3.3",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.79.0",
+    "better-auth": "^1.2.9",
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.2",
     "lru-cache": "^11.1.0",
     "next": "15.3.3",
-    "next-auth": "^4.24.11",
     "node-postgres": "^0.6.2",
     "p-queue": "^8.1.0",
     "papaparse": "^5.5.3",

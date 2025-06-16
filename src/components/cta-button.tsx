@@ -8,7 +8,7 @@ export function CtaButton() {
       href="/dashboard"
       variant="contained"
       size="large"
-      color="secondary"
+      color="primary"
       LinkComponent={Link}
       endIcon={<ArrowForward fontSize="small" />}
     >
