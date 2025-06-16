@@ -3,18 +3,18 @@
 import { useState } from "react";
 
 import { Box, Chip, Container, Snackbar } from "@mui/material";
-import { Stats } from "@/features/portfolio/components/stats";
-import CsvDropzoneUploader from "@/features/portfolio/components/csv-upload";
-import { ShowValuesToggle } from "@/features/portfolio/components/show-values-toggle";
-import { DepotProvider } from "@/features/portfolio/hooks/use-depot";
+import { Stats } from "@/features/dashboard/components/stats";
+import CsvDropzoneUploader from "@/features/dashboard/components/csv-upload";
+import { ShowValuesToggle } from "@/features/dashboard/components/show-values-toggle";
+import { DepotProvider } from "@/features/dashboard/hooks/use-depot";
 import {
   handleParseDepotTransactionData,
   handleParseAccountTransactionData,
   mergeAccountTransactions,
   mergeDepotTransactions,
-} from "@/features/portfolio/logic/transaction-parsing";
-import { ParsedAccountTransaction } from "@/features/portfolio/types/account-transaction";
-import { ParsedDepotTransaction } from "@/features/portfolio/types/depot-transaction";
+} from "@/features/dashboard/logic/transaction-parsing";
+import { ParsedAccountTransaction } from "@/features/dashboard/types/account-transaction";
+import { ParsedDepotTransaction } from "@/features/dashboard/types/depot-transaction";
 
 export default function App() {
   const [depotTransactions, setDepotTransactions] = useState<

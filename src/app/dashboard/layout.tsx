@@ -1,6 +1,6 @@
 "use client";
 
-import { ShowValuesProvider } from "@/features/portfolio/hooks/use-show-values";
+import { ShowValuesProvider } from "@/features/dashboard/hooks/use-show-values";
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {

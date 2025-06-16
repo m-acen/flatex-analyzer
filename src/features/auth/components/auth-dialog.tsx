@@ -79,7 +79,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle>
-        {isSignUp ? "Sign Up" : "Sign In"}
+        {isSignUp ? "Konto erstellen" : "Anmelden"}
         <IconButton
           aria-label="close"
           onClick={onClose}
@@ -92,6 +92,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
       <DialogContent>
         <Box component="form" onSubmit={handleSubmit} mt={1}>
           <TextField
+            variant="outlined"
             label="Email"
             type="email"
             value={email}
@@ -103,6 +104,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
             helperText={fieldErrors.email}
           />
           <TextField
+            variant="outlined"
             label="Password"
             type="password"
             value={password}
@@ -132,7 +134,9 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
 
           <Box mt={2} textAlign="center">
             <Typography variant="body2">
-              {isSignUp ? "Du hast bereits ein Konto?" : "Du hast noch kein Konto?"} 
+              {isSignUp
+                ? "Du hast bereits ein Konto?"
+                : "Du hast noch kein Konto?"}
               <br />
               <MuiLink
                 type="button"
