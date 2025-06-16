@@ -1,0 +1,3 @@
+- remove logto
+- use nextauth.js with drizzle + pg
+https://authjs.dev/getting-started/adapters/drizzle?_gl=1*79479*_gcl_au*NTY5NzQxNzAxLjE3NTAwNzI2MzU.
