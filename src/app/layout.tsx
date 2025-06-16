@@ -4,8 +4,6 @@ import { Metadata } from "next";
 import ClientWrapper from "@/components/client-wrapper";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { logtoConfig } from "@/features/auth/logto-config";
-import { getLogtoContext, signIn, signOut } from "@logto/next/server-actions";
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -58,25 +56,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { isAuthenticated, claims } = await getLogtoContext(logtoConfig);
   return (
     <html lang="en" className={roboto.variable}>
       <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       <body>
         <div className="min-h-svh flex flex-col justify-between">
           <ClientWrapper>
-            <Header
-              isAuthenticated={isAuthenticated}
-              username={claims?.username}
-              onSignIn={async () => {
-                "use server";
-                await signIn(logtoConfig);
-              }}
-              onSignOut={async () => {
-                "use server";
-                await signOut(logtoConfig);
-              }}
-            />
+            <Header />
             {children}
             <Footer />
           </ClientWrapper>

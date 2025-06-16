@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { deepPurple } from "@mui/material/colors";
 import theme from "@/theme";
 
 type ProfileMenuProps = {
