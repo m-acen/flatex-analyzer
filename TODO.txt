@@ -1,3 +1,14 @@
-- remove logto
-- use nextauth.js with drizzle + pg
-https://authjs.dev/getting-started/adapters/drizzle?_gl=1*79479*_gcl_au*NTY5NzQxNzAxLjE3NTAwNzI2MzU.
+- reference: https://mui.com/toolpad/core/templates/nextjs-dashboard (dont use toolpad, seems to early to use)
+    - data
+        - see uploaded data sets (upload timestamp, rows, type)
+        - manage persistence mode
+            - session (no persistence)
+            - localstorage (browser)
+            - encrypted server (between devices) - only available logged in
+    - portfolio
+        - overview
+        - assets
+        - performance
+    - profile + settings
+        - show values
+        - logout/log in/delete
