@@ -6,6 +6,7 @@ import {
   MenuItem,
   ListItemIcon,
   Divider,
+  Button,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -15,12 +16,14 @@ type ProfileMenuProps = {
   username: string;
   onLogout: () => Promise<void>;
   onDeleteAccount: () => Promise<void>;
+  variant?: "icon" | "text";
 };
 
 const ProfileMenu: React.FC<ProfileMenuProps> = ({
   username,
   onLogout,
   onDeleteAccount,
+  variant = "icon",
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -39,11 +42,18 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
 
   return (
     <>
-      <IconButton onClick={handleClick} size="small">
+      <Button onClick={handleClick} size="small" fullWidth={variant === "text"} sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
         <Avatar sx={{ bgcolor: color, width: 32, height: 32 }}>
           {getInitial(username)}
         </Avatar>
-      </IconButton>
+        {
+          variant === "text" ? (
+            <span style={{ marginLeft: 8, color: theme.palette.text.primary }}>
+              {username}
+            </span>
+          ) : null
+        }
+      </Button>
 
       <Menu
         anchorEl={anchorEl}

@@ -89,7 +89,7 @@ function PortfolioOverview({
       : [];
 
   return (
-    <Box sx={{ p: 2 }} maxWidth="xl" width={"100%"}>
+    <Box sx={{ p: 2 }} width={"100%"}>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 12, md: 8, lg: 6 }}>
           <Paper sx={{ p: 2, mb: 2, height: "calc(100% - 16px)" }}>
@@ -223,38 +223,10 @@ export function Stats() {
   });
 
   return (
-    <Box
-      width={"100%"}
-      display={"flex"}
-      flexDirection="column"
-      alignItems={"center"}
-    >
-      {progress.state !== ProgressState.COMPLETED && (
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Box sx={{ width: "100%" }}>
-            <LinearProgress
-              variant="determinate"
-              value={progress.progress * 100}
-            />
-          </Box>
-          <Typography color="text.primary" variant="caption" gutterBottom>
-            {progress.message}
-          </Typography>
-        </Box>
-      )}
-
-      <PortfolioOverview
-        accountTransactions={accountTransactions}
-        sortedItems={sortedItems}
-        progress={progress.state}
-      />
-    </Box>
+    <PortfolioOverview
+      accountTransactions={accountTransactions}
+      sortedItems={sortedItems}
+      progress={progress.state}
+    />
   );
 }

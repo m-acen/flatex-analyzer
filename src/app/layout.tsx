@@ -62,10 +62,8 @@ export default async function RootLayout({
       <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       <body>
         <div className="min-h-svh flex flex-col justify-between">
-          <ClientWrapper>            
-            <Header />
+          <ClientWrapper>
             {children}
-            <Footer />
           </ClientWrapper>
         </div>
       </body>

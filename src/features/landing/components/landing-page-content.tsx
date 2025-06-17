@@ -57,7 +57,7 @@ export default function LandingPageContent() {
                   variant="outlined"
                   size="large"
                   color="primary"
-                  href="/dashboard/demo"
+                  href="/demo"
                   LinkComponent={Link}
                 >
                   Ausprobieren

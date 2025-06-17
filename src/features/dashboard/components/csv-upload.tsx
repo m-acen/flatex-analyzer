@@ -9,7 +9,7 @@ import { blue, grey, orange } from "@mui/material/colors";
 import { useTheme } from "@mui/material/styles";
 
 interface CsvDropzoneUploaderProps {
-  onParsed: (data: unknown[]) => void;
+  onParsed: (data: unknown[], filename: string) => void;
 }
 
 export default function CsvDropzoneUploader({
@@ -40,7 +40,7 @@ export default function CsvDropzoneUploader({
             setError("Error parsing CSV.");
             console.error(results.errors);
           } else {
-            onParsed(results.data);
+            onParsed(results.data, file.name);
           }
         },
       });

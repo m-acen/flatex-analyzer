@@ -7,6 +7,7 @@ import { ParsedAccountTransaction } from "../types/account-transaction";
 import { Asset } from "../types/asset";
 import { DepotItem } from "../types/depot-item";
 import { ParsedDepotTransaction } from "../types/depot-transaction";
+import { useRawData } from "./use-raw-transaction-data-sets";
 
 function createEmptyDepotItem(tx: ParsedDepotTransaction): DepotItem {
   return {
@@ -74,15 +75,11 @@ type DepotContextType = {
 
 const DepotContext = createContext<DepotContextType | null>(null);
 
-export function DepotProvider({
-  depotTransactions,
-  accountTransactions,
-  children,
-}: {
-  depotTransactions: ParsedDepotTransaction[];
-  accountTransactions: ParsedAccountTransaction[];
-  children: React.ReactNode;
-}) {
+export function DepotProvider({ children }: { children: React.ReactNode }) {
+  const {
+    parsedAccountTransactions: accountTransactions,
+    parsedDepotTransactions: depotTransactions,
+  } = useRawData();
   const depotItems = getDepotItems(depotTransactions, accountTransactions);
   const { assets, progress } = useAssetsCalc(depotItems);
 
