@@ -25,19 +25,23 @@ import { PieChartSwitcher } from "./pie-chart-switcher";
 import { LineChart } from "@mui/x-charts";
 import { useShowValues } from "../hooks/use-show-values";
 import { ProgressState } from "../hooks/use-assets-calc";
-import { useDepot } from "../hooks/use-depot";
 import { ParsedAccountTransaction } from "../types/account-transaction";
 import { Asset } from "../types/asset";
 
-function PortfolioOverview({
+export function PortfolioOverview({
   accountTransactions,
-  sortedItems,
+  assets,
   progress,
 }: {
   accountTransactions: ParsedAccountTransaction[];
-  sortedItems: Asset[];
+  assets: Asset[];
   progress: ProgressState;
 }) {
+  const sortedItems = [...assets].sort((a, b) => {
+    const valueA = a.currentPositionValue || 0;
+    const valueB = b.currentPositionValue || 0;
+    return valueB - valueA;
+  });
   const { showValues } = useShowValues();
   const initialInvestment = getInitialInvestment(accountTransactions);
   const cashPosition = getCashPosition(accountTransactions);
@@ -210,23 +214,5 @@ function PortfolioOverview({
         ))}
       </Grid>
     </Box>
-  );
-}
-
-export function Stats() {
-  const { assets, progress, accountTransactions } = useDepot();
-
-  const sortedItems = [...assets].sort((a, b) => {
-    const valueA = a.currentPositionValue || 0;
-    const valueB = b.currentPositionValue || 0;
-    return valueB - valueA;
-  });
-
-  return (
-    <PortfolioOverview
-      accountTransactions={accountTransactions}
-      sortedItems={sortedItems}
-      progress={progress.state}
-    />
   );
 }

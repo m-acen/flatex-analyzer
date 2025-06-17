@@ -15,6 +15,7 @@ import { ArrowForward } from "@mui/icons-material";
 import InfoBox from "@/components/info-box";
 import { CtaButton } from "@/components/cta-button";
 import Link from "next/link";
+import { RepoButton } from "@/components/repo-button";
 
 export default function LandingPageContent() {
   const theme = useTheme();
@@ -53,15 +54,7 @@ export default function LandingPageContent() {
                 Trades, im Blick. Open Source und vollkommen kostenlos.
               </Typography>
               <Stack direction={"row"} spacing={{ lg: 2, xs: 1 }} mt={2}>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  color="primary"
-                  href="/demo"
-                  LinkComponent={Link}
-                >
-                  Ausprobieren
-                </Button>
+                <RepoButton />
                 <CtaButton />
               </Stack>
             </Stack>

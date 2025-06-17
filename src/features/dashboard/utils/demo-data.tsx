@@ -1,5 +1,3 @@
-import { Stats } from "@/features/dashboard/components/stats";
-import { DepotProvider } from "@/features/dashboard/hooks/use-depot";
 import { ParsedAccountTransaction } from "@/features/dashboard/types/account-transaction";
 import { ParsedDepotTransaction } from "@/features/dashboard/types/depot-transaction";
 import dayjs from "dayjs";
@@ -35,7 +33,7 @@ const fakeDepotData = [
   },
 ];
 
-function generateTransactionsFromFakeDepotData(): {
+export function generateTransactionsFromFakeDepotData(): {
   depotTransactions: ParsedDepotTransaction[];
   accountTransactions: ParsedAccountTransaction[];
 } {
@@ -87,17 +85,4 @@ function generateTransactionsFromFakeDepotData(): {
       ...internalAccountTransactions,
     ],
   };
-}
-
-export default function DemoPage() {
-  const { depotTransactions, accountTransactions } =
-    generateTransactionsFromFakeDepotData();
-  return (
-    <DepotProvider
-      accountTransactions={accountTransactions}
-      depotTransactions={depotTransactions}
-    >
-      <Stats />
-    </DepotProvider>
-  );
 }

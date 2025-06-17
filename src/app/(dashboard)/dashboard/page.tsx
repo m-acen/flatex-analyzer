@@ -1,12 +1,16 @@
 "use client";
 
 import { Box } from "@mui/material";
-import { Stats } from "@/features/dashboard/components/stats";
+import { PortfolioOverview } from "@/features/dashboard/components/portfolio-overview";
+import { useDepot } from "@/features/dashboard/hooks/use-depot";
 
 export default function DashboardPage() {
+  const { assets, accountTransactions, progress } = useDepot();
   return (
-    <Box className="flex flex-col items-center p-4">
-      <Stats />
-    </Box>
+    <PortfolioOverview
+      accountTransactions={accountTransactions}
+      assets={assets}
+      progress={progress.state}
+    />
   );
 }
