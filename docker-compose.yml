@@ -20,6 +20,8 @@ services:
       - .env
     depends_on:
       - yf-wrapper
+      - migrate
+      - pg-data
   pg-data:
     image: postgres:15
     container_name: pg-data
@@ -32,6 +34,18 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+  migrate:
+    image: node:18-alpine
+    container_name: migrate
+    working_dir: /app
+    command: >
+      sh -c "npx drizzle-kit push --config=drizzle.config.ts"
+    depends_on:
+      - pg-data
+    volumes:
+      - ./:/app
+    env_file:
+      - .env
 
 volumes:
   pgdata:

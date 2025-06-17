@@ -1,12 +1,12 @@
 {
-  "name": "stonk",
+  "name": "flatex-analyzer",
   "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+		"start": "next start"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -36,6 +36,7 @@
     "react-dropzone": "^14.3.8",
     "react-player": "^2.16.0",
     "yahoo-finance2": "^2.13.3",
+    "drizzle-kit": "^0.31.1",
     "zod": "^3.25.46"
   },
   "devDependencies": {
@@ -46,7 +47,6 @@
     "@types/pg": "^8.15.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "drizzle-kit": "^0.31.1",
     "tailwindcss": "^4",
     "tsx": "^4.19.4",
     "typescript": "^5"
