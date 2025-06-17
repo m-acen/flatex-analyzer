@@ -93,7 +93,6 @@ export default function DataPage() {
           controls
         />
       </Box>
-      {/* Snackbar */}
       <Snackbar
         open={error !== null}
         autoHideDuration={6000}

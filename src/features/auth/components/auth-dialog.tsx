@@ -59,14 +59,20 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
 
     try {
       if (isSignUp) {
-        await signUp.email({
+        const { error } = await signUp.email({
           name: email.split("@")[0],
           email,
           password,
           callbackURL: "/dashboard",
         });
+        if (error) {
+          throw new Error(error.message);
+        }
       } else {
-        await signIn.email({ email, password, callbackURL: "/dashboard" });
+        const { error } = await signIn.email({ email, password, callbackURL: "/dashboard" });
+        if (error) {
+          throw new Error(error.message);
+        }
       }
       onClose(); // close on success
     } catch (err: any) {

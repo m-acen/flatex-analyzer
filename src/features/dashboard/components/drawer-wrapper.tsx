@@ -164,7 +164,7 @@ export default function MiniDrawer({
           </IconButton>
         </DrawerHeader>
         <Divider />
-        <List sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        <List disablePadding sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
           {navItems.map((item, index) => (
             <ListItem key={item.text} disablePadding sx={{ display: "block" }}>
               <ListItemButton
@@ -219,7 +219,7 @@ export default function MiniDrawer({
           ))}
           <Box sx={{ flexGrow: 1 }} />
           <Divider />
-          <ListItem sx={{ display: "block" }}>
+          <ListItem disablePadding sx={{ display: "block"}}>
             <MobileAuthSwitch variant={open ? "text" : "icon"} />
           </ListItem>
         </List>
