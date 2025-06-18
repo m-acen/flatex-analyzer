@@ -7,12 +7,65 @@ import {
   Snackbar,
   Grid,
   Avatar,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
 } from "@mui/material";
 import CsvDropzoneUploader from "@/features/dashboard/components/csv-upload";
 import { useRawData } from "@/features/dashboard/hooks/use-raw-transaction-data-sets";
 import { TransactionDataCard } from "@/features/dashboard/components/transaction-data-card";
 import { AttachMoney, ShowChart } from "@mui/icons-material";
 import ReactPlayer from "react-player";
+import { useState } from "react";
+import {
+  RawDepotTransactionDataSet,
+  RawAccountTransactionDataSet,
+} from "@/features/dashboard/types/raw-transaction-data-set";
+import {
+  createEncryptedServerStorageAdapter,
+  createLocalStorageAdapter,
+  StorageAdapter,
+} from "@/lib/storage-adapter";
+
+interface PersistenceMode {
+  value: "none" | "localStorage" | "server";
+  label: string;
+  storageAdapter?: StorageAdapter<{
+    depot: RawDepotTransactionDataSet[];
+    account: RawAccountTransactionDataSet[];
+  }>;
+}
+
+function PersistenceModeSelect({
+  persistenceModes,
+}: {
+  persistenceModes?: PersistenceMode[];
+}) {
+  const [mode, setMode] = useState<"none" | "localStorage" | "server">("none");
+
+  const handleChange = (event: SelectChangeEvent) => {
+    setMode(event.target.value as "none" | "localStorage" | "server");
+  };
+
+  return (
+    <FormControl fullWidth>
+      <InputLabel id="persistence-mode-label">Persistence Mode</InputLabel>
+      <Select
+        labelId="persistence-mode-label"
+        id="persistence-mode-select"
+        value={mode}
+        label="Persistence Mode"
+        onChange={handleChange}
+      >
+        <MenuItem value="none">None</MenuItem>
+        <MenuItem value="localStorage">Local Storage</MenuItem>
+        <MenuItem value="server">Server</MenuItem>
+      </Select>
+    </FormControl>
+  );
+}
 
 export default function DataPage() {
   const {
@@ -24,6 +77,8 @@ export default function DataPage() {
     deleteDepotDataSet,
     deleteAccountDataSet,
     error,
+    storageAdapter,
+    setStorageAdapter,
   } = useRawData();
 
   const totalDepotRows = parsedDepotTransactions.length;
@@ -76,6 +131,28 @@ export default function DataPage() {
           </Grid>
         ))}
       </Grid>
+
+      <PersistenceModeSelect
+        persistenceModes={[
+          { value: "none", label: "Keine Speicherung" },
+          {
+            value: "localStorage",
+            label: "Local Storage",
+            storageAdapter: createLocalStorageAdapter<{
+              depot: RawDepotTransactionDataSet[];
+              account: RawAccountTransactionDataSet[];
+            }>("rawTransactionDataSets"),
+          },
+          {
+            value: "server",
+            label: "Server",
+            storageAdapter: createEncryptedServerStorageAdapter<{
+              depot: RawDepotTransactionDataSet[];
+              account: RawAccountTransactionDataSet[];
+            }>({}),
+          },
+        ]}
+      />
 
       <Box mt={4}>
         <Typography variant="body1">

@@ -12,6 +12,7 @@ import {
 import { ParsedAccountTransaction } from "../types/account-transaction";
 import { ParsedDepotTransaction } from "../types/depot-transaction";
 import { StorageAdapter } from "@/lib/storage-adapter";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 
 interface RawDataContextType {
   depotDataSets: RawDepotTransactionDataSet[];
@@ -22,59 +23,90 @@ interface RawDataContextType {
   handleRawCsvUpload: (data: unknown[], fileName: string) => void;
   deleteDepotDataSet: (id: string) => void;
   deleteAccountDataSet: (id: string) => void;
+  storageAdapter?: StorageAdapter<{
+    depot: RawDepotTransactionDataSet[];
+    account: RawAccountTransactionDataSet[];
+  }>;
+  setStorageAdapter?: (
+    adapter: StorageAdapter<{
+      depot: RawDepotTransactionDataSet[];
+      account: RawAccountTransactionDataSet[];
+    }>
+  ) => void;
 }
 
 const RawDataContext = createContext<RawDataContextType | undefined>(undefined);
 
 interface RawDataProviderProps {
   children: ReactNode;
-  storageAdapter?: StorageAdapter<{
-    depot: RawDepotTransactionDataSet[];
-    account: RawAccountTransactionDataSet[];
-  }>;
 }
 
-export const RawDataProvider = ({
-  children,
-  storageAdapter
-}: RawDataProviderProps) => {
-  const initialData = storageAdapter?.load() ?? { depot: [], account: [] };
+export const RawDataProvider = ({ children }: RawDataProviderProps) => {
+  const queryClient = useQueryClient();
+  const [storageAdapter, setStorageAdapter] = useState<
+    | StorageAdapter<{
+        depot: RawDepotTransactionDataSet[];
+        account: RawAccountTransactionDataSet[];
+      }>
+    | undefined
+  >(undefined);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["rawData"],
+    queryFn: async () => {
+      if (!storageAdapter) return { depot: [], account: [] };
+      return await storageAdapter.load();
+    },
+    staleTime: Infinity, // don't refetch unless manually invalidated
+    enabled: !!storageAdapter,
+    initialData: { depot: [], account: [] },
+  });
 
-  const [depotDataSets, setDepotDataSets] = useState(initialData.depot || []);
-  const [accountDataSets, setAccountDataSets] = useState(initialData.account || []);
+  const saveMutation = useMutation({
+    mutationFn: async (payload: {
+      depot: RawDepotTransactionDataSet[];
+      account: RawAccountTransactionDataSet[];
+    }) => {
+      await storageAdapter?.save(payload);
+      return payload;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["rawData"], data);
+    },
+  });
+
   const [error, setError] = useState<string | null>(null);
 
   const persist = (
     depot: RawDepotTransactionDataSet[],
     account: RawAccountTransactionDataSet[]
   ) => {
-    storageAdapter?.save({ depot, account });
+    saveMutation.mutate({ depot, account });
   };
 
-  const handleRawCsvUpload = (data: unknown[], fileName: string) => {
+  const handleRawCsvUpload = (csvData: unknown[], fileName: string) => {
     setError(null);
     const timestamp = new Date();
     const id =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      crypto.randomUUID?.() ??
+      `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-    const depotParsed = handleParseDepotTransactionData(data);
+    const depotParsed = handleParseDepotTransactionData(csvData);
     if (depotParsed) {
-      const newDepot = [...depotDataSets, { id, data, fileName, timestamp }];
-      setDepotDataSets(newDepot);
-      persist(newDepot, accountDataSets);
+      const newDepot = [
+        ...(data?.depot ?? []),
+        { id, data: csvData, fileName, timestamp },
+      ];
+      persist(newDepot, data?.account ?? []);
       return;
     }
 
-    const accountParsed = handleParseAccountTransactionData(data);
+    const accountParsed = handleParseAccountTransactionData(csvData);
     if (accountParsed) {
       const newAccount = [
-        ...accountDataSets,
-        { id, data, fileName, timestamp },
+        ...(data?.account ?? []),
+        { id, data: csvData, fileName, timestamp },
       ];
-      setAccountDataSets(newAccount);
-      persist(depotDataSets, newAccount);
+      persist(data?.depot ?? [], newAccount);
       return;
     }
 
@@ -82,38 +114,36 @@ export const RawDataProvider = ({
   };
 
   const deleteDepotDataSet = (id: string) => {
-    const updated = depotDataSets.filter((ds) => ds.id !== id);
-    setDepotDataSets(updated);
-    persist(updated, accountDataSets);
+    const updated = data!.depot.filter((ds) => ds.id !== id);
+    persist(updated, data!.account);
   };
 
   const deleteAccountDataSet = (id: string) => {
-    const updated = accountDataSets.filter((ds) => ds.id !== id);
-    setAccountDataSets(updated);
-    persist(depotDataSets, updated);
+    const updated = data!.account.filter((ds) => ds.id !== id);
+    persist(data!.depot, updated);
   };
 
   const parsedDepotTransactions = mergeDepotTransactions(
-    depotDataSets.map((ds) => handleParseDepotTransactionData(ds.data) ?? [])
+    data!.depot.map((ds) => handleParseDepotTransactionData(ds.data) ?? [])
   );
 
   const parsedAccountTransactions = mergeAccountTransactions(
-    accountDataSets.map(
-      (ds) => handleParseAccountTransactionData(ds.data) ?? []
-    )
+    data!.account.map((ds) => handleParseAccountTransactionData(ds.data) ?? [])
   );
 
   return (
     <RawDataContext.Provider
       value={{
-        depotDataSets,
-        accountDataSets,
+        depotDataSets: data!.depot,
+        accountDataSets: data!.account,
         parsedDepotTransactions,
         parsedAccountTransactions,
         error,
         handleRawCsvUpload,
         deleteDepotDataSet,
         deleteAccountDataSet,
+        storageAdapter,
+        setStorageAdapter,
       }}
     >
       {children}
