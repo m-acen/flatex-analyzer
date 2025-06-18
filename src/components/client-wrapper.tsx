@@ -5,6 +5,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import theme from "@/theme";
 import { AuthDialogProvider } from "@/features/auth/hooks/use-auth-dialog";
+import { UserConfigProvider } from "@/hooks/use-user-config";
 
 const queryClient = new QueryClient();
 export default function ClientWrapper({
@@ -17,7 +18,9 @@ export default function ClientWrapper({
       <AppRouterCacheProvider>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <AuthDialogProvider>{children}</AuthDialogProvider>
+          <UserConfigProvider>
+            <AuthDialogProvider>{children}</AuthDialogProvider>
+          </UserConfigProvider>
         </ThemeProvider>
       </AppRouterCacheProvider>
     </QueryClientProvider>

@@ -11,8 +11,14 @@ import {
 } from "../logic/transaction-parsing";
 import { ParsedAccountTransaction } from "../types/account-transaction";
 import { ParsedDepotTransaction } from "../types/depot-transaction";
-import { StorageAdapter } from "@/lib/storage-adapter";
+import {
+  createLocalStorageAdapter,
+  StorageAdapter,
+} from "@/lib/storage-adapter";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { useUserConfig } from "@/hooks/use-user-config";
+import { useStorageAdapter } from "@/hooks/use-storage-adapter";
+import { DataPersistenceMode } from "@/lib/user-config";
 
 interface RawDataContextType {
   depotDataSets: RawDepotTransactionDataSet[];
@@ -23,16 +29,6 @@ interface RawDataContextType {
   handleRawCsvUpload: (data: unknown[], fileName: string) => void;
   deleteDepotDataSet: (id: string) => void;
   deleteAccountDataSet: (id: string) => void;
-  storageAdapter?: StorageAdapter<{
-    depot: RawDepotTransactionDataSet[];
-    account: RawAccountTransactionDataSet[];
-  }>;
-  setStorageAdapter?: (
-    adapter: StorageAdapter<{
-      depot: RawDepotTransactionDataSet[];
-      account: RawAccountTransactionDataSet[];
-    }>
-  ) => void;
 }
 
 const RawDataContext = createContext<RawDataContextType | undefined>(undefined);
@@ -43,13 +39,30 @@ interface RawDataProviderProps {
 
 export const RawDataProvider = ({ children }: RawDataProviderProps) => {
   const queryClient = useQueryClient();
-  const [storageAdapter, setStorageAdapter] = useState<
-    | StorageAdapter<{
+
+  const { config } = useUserConfig();
+
+  const adapterMap: Partial<
+    Record<
+      DataPersistenceMode,
+      StorageAdapter<{
         depot: RawDepotTransactionDataSet[];
         account: RawAccountTransactionDataSet[];
       }>
-    | undefined
-  >(undefined);
+    >
+  > = {
+    local: createLocalStorageAdapter<{
+      depot: RawDepotTransactionDataSet[];
+      account: RawAccountTransactionDataSet[];
+    }>("raw_transaction_data"),
+    // server: serverAdapter,
+  };
+
+  const storageAdapter = useStorageAdapter<{
+    depot: RawDepotTransactionDataSet[];
+    account: RawAccountTransactionDataSet[];
+  }>(config.dataPersistenceMode, adapterMap);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["rawData"],
     queryFn: async () => {
@@ -142,8 +155,6 @@ export const RawDataProvider = ({ children }: RawDataProviderProps) => {
         handleRawCsvUpload,
         deleteDepotDataSet,
         deleteAccountDataSet,
-        storageAdapter,
-        setStorageAdapter,
       }}
     >
       {children}

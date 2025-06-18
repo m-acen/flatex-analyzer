@@ -18,35 +18,18 @@ import { useRawData } from "@/features/dashboard/hooks/use-raw-transaction-data-
 import { TransactionDataCard } from "@/features/dashboard/components/transaction-data-card";
 import { AttachMoney, ShowChart } from "@mui/icons-material";
 import ReactPlayer from "react-player";
-import { useState } from "react";
-import {
-  RawDepotTransactionDataSet,
-  RawAccountTransactionDataSet,
-} from "@/features/dashboard/types/raw-transaction-data-set";
-import {
-  createEncryptedServerStorageAdapter,
-  createLocalStorageAdapter,
-  StorageAdapter,
-} from "@/lib/storage-adapter";
+import { DataPersistenceMode } from "@/lib/user-config";
+import { useUserConfig } from "@/hooks/use-user-config";
 
-interface PersistenceMode {
-  value: "none" | "localStorage" | "server";
-  label: string;
-  storageAdapter?: StorageAdapter<{
-    depot: RawDepotTransactionDataSet[];
-    account: RawAccountTransactionDataSet[];
-  }>;
-}
+export function PersistenceModeSelect() {
+  const { config, updateConfig } = useUserConfig();
 
-function PersistenceModeSelect({
-  persistenceModes,
-}: {
-  persistenceModes?: PersistenceMode[];
-}) {
-  const [mode, setMode] = useState<"none" | "localStorage" | "server">("none");
+  const handleChange = async (event: SelectChangeEvent) => {
+    const newMode = event.target.value as DataPersistenceMode;
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setMode(event.target.value as "none" | "localStorage" | "server");
+    if (newMode !== config.dataPersistenceMode) {
+      await updateConfig({ dataPersistenceMode: newMode });
+    }
   };
 
   return (
@@ -55,13 +38,15 @@ function PersistenceModeSelect({
       <Select
         labelId="persistence-mode-label"
         id="persistence-mode-select"
-        value={mode}
+        value={config.dataPersistenceMode}
         label="Persistence Mode"
         onChange={handleChange}
       >
-        <MenuItem value="none">None</MenuItem>
-        <MenuItem value="localStorage">Local Storage</MenuItem>
-        <MenuItem value="server">Server</MenuItem>
+        {Object.values(DataPersistenceMode).map((value) => (
+          <MenuItem key={value} value={value}>
+            {value.charAt(0).toUpperCase() + value.slice(1)}
+          </MenuItem>
+        ))}
       </Select>
     </FormControl>
   );
@@ -132,27 +117,7 @@ export default function DataPage() {
         ))}
       </Grid>
 
-      <PersistenceModeSelect
-        persistenceModes={[
-          { value: "none", label: "Keine Speicherung" },
-          {
-            value: "localStorage",
-            label: "Local Storage",
-            storageAdapter: createLocalStorageAdapter<{
-              depot: RawDepotTransactionDataSet[];
-              account: RawAccountTransactionDataSet[];
-            }>("rawTransactionDataSets"),
-          },
-          {
-            value: "server",
-            label: "Server",
-            storageAdapter: createEncryptedServerStorageAdapter<{
-              depot: RawDepotTransactionDataSet[];
-              account: RawAccountTransactionDataSet[];
-            }>({}),
-          },
-        ]}
-      />
+      <PersistenceModeSelect />
 
       <Box mt={4}>
         <Typography variant="body1">
