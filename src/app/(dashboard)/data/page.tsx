@@ -62,8 +62,6 @@ export default function DataPage() {
     deleteDepotDataSet,
     deleteAccountDataSet,
     error,
-    storageAdapter,
-    setStorageAdapter,
   } = useRawData();
 
   const totalDepotRows = parsedDepotTransactions.length;
