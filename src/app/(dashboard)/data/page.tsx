@@ -27,18 +27,21 @@ function PersistenceModeSelect() {
   const handleChange = async (event: SelectChangeEvent) => {
     const newMode = event.target.value as DataPersistenceMode;
 
-    if (newMode !== config.dataPersistenceMode) {
+    if (newMode !== config?.dataPersistenceMode) {
       await updateConfig({ dataPersistenceMode: newMode });
     }
   };
-
+  console.log("PersistenceModeSelect rendered with mode:", config?.dataPersistenceMode);
+  if (!config) {
+    return null; // or a loading spinner if you prefer
+  }
   return (
     <FormControl fullWidth>
       <InputLabel id="persistence-mode-label">Persistence Mode</InputLabel>
       <Select
         labelId="persistence-mode-label"
         id="persistence-mode-select"
-        value={config.dataPersistenceMode}
+        value={config?.dataPersistenceMode}
         label="Persistence Mode"
         onChange={handleChange}
       >
@@ -136,7 +139,7 @@ export default function DataPage() {
       <Snackbar
         open={error !== null}
         autoHideDuration={6000}
-        onClose={() => {}}
+        onClose={() => { }}
         message={error}
       />
     </Box>

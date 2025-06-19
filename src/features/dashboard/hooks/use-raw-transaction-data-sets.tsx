@@ -118,12 +118,12 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
-  const queryKey = ["rawTransactionData", config.dataPersistenceMode];
+  const queryKey = ["rawTransactionData", config?.dataPersistenceMode];
 
   const { data: rawData, isLoading: isDataLoading } = useQuery({
     queryKey: queryKey,
     queryFn: async () => {
-      const adapter = adapterMap[config.dataPersistenceMode];
+      const adapter = adapterMap[config?.dataPersistenceMode];
       if (!adapter) return defaultRawData;
       return (await adapter.load()) ?? defaultRawData;
     },
@@ -149,10 +149,20 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
   });
 
   // --- Effect to Trigger Porting ---
-  const previousMode = useRef<DataPersistenceMode>(config.dataPersistenceMode);
+  const previousMode = useRef<DataPersistenceMode>(null);
 
   useEffect(() => {
-    const newMode = config.dataPersistenceMode;
+    if (isConfigLoading || isDataLoading) return;
+    const currentMode = config?.dataPersistenceMode;
+    if (!previousMode.current) {
+      previousMode.current = currentMode;
+      return; // Skip the first run
+    }
+  }, [config?.dataPersistenceMode, isConfigLoading, isDataLoading]);
+
+  useEffect(() => {
+    if (isConfigLoading || isDataLoading || !previousMode.current) return;
+    const newMode = config?.dataPersistenceMode;
     const oldMode = previousMode.current;
 
     if (newMode !== oldMode) {
@@ -164,12 +174,12 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
       }
       previousMode.current = newMode;
     }
-  }, [config.dataPersistenceMode, portDataMutation]);
+  }, [config?.dataPersistenceMode, portDataMutation]);
 
   // --- Mutation for User-Initiated Updates ---
   const updateMutation = useMutation({
     mutationFn: async (newData: RawDataState) => {
-      const adapter = adapterMap[config.dataPersistenceMode];
+      const adapter = adapterMap[config?.dataPersistenceMode];
       if (!adapter?.save) throw new Error("Saving is not supported.");
       await adapter.save(newData);
     },

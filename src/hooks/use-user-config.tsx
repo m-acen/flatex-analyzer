@@ -22,7 +22,7 @@ const defaultUserConfig: UserConfig = {
 };
 
 const UserConfigContext = createContext<{
-  config: UserConfig;
+  config: UserConfig | null;
   updateConfig: (newConfig: Partial<UserConfig>) => Promise<UserConfig>;
   isLoading: boolean;
 } | null>(null);
@@ -103,7 +103,7 @@ export const UserConfigProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   // The final config object, falling back to default if still loading.
-  const config = configData ?? defaultUserConfig;
+  const config = configData ?? null;
 
   const value = {
     config,
