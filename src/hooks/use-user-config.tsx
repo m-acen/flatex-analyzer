@@ -11,7 +11,7 @@ import {
   clearUserConfig,
   loadUserConfig,
   saveUserConfig,
-} from "@/server/user-config-actions";
+} from "@/lib/user-config-fetch";
 
 export type UserConfig = z.infer<typeof UserConfigSchema>;
 
