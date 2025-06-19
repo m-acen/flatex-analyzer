@@ -12,13 +12,19 @@ import {
   loadUserConfig,
   saveUserConfig,
 } from "@/server/user-config-actions";
-import { useStorageAdapter } from "./use-storage-adapter";
 
 export type UserConfig = z.infer<typeof UserConfigSchema>;
 
+// Define a default configuration to use when none is loaded.
+const defaultUserConfig: UserConfig = {
+  dataPersistenceMode: DataPersistenceMode.LOCAL,
+  // ... add other default values for your config schema
+};
+
 const UserConfigContext = createContext<{
   config: UserConfig;
-  updateConfig: (newConfig: Partial<UserConfig>) => Promise<void>;
+  updateConfig: (newConfig: Partial<UserConfig>) => Promise<UserConfig>;
+  isLoading: boolean;
 } | null>(null);
 
 export const useUserConfig = () => {
@@ -30,64 +36,84 @@ export const useUserConfig = () => {
 
 const STORAGE_KEY = "user_config";
 
+// The map of available storage adapters remains the same.
+const userConfigAdapterMap: Partial<
+  Record<DataPersistenceMode, StorageAdapter<UserConfig>>
+> = {
+  local: createLocalStorageAdapter<UserConfig>(STORAGE_KEY),
+  server: {
+    load: loadUserConfig,
+    save: saveUserConfig,
+    clear: clearUserConfig,
+  },
+};
+
 export const UserConfigProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const { data: session, isPending: isSessionLoading } = useSession();
   const queryClient = useQueryClient();
-  const { data: session, isPending } = useSession();
 
-  const userConfigPersistenceMode = session?.user?.id
-    ? DataPersistenceMode.SERVER
-    : DataPersistenceMode.LOCAL;
+  // Determine the active persistence mode based on session status.
+  const persistenceMode: DataPersistenceMode = session?.user ? DataPersistenceMode.SERVER : DataPersistenceMode.LOCAL;
 
-  const adapter = useStorageAdapter<UserConfig>(userConfigPersistenceMode, {
-    local: createLocalStorageAdapter<UserConfig>(STORAGE_KEY),
-    server: {
-      load: loadUserConfig,
-      save: saveUserConfig,
-      clear: clearUserConfig,
-    },
-  });
+  // The query key includes the user's ID (or 'local') to ensure data is
+  // refetched automatically when the user logs in or out.
+  const queryKey = useMemo(
+    () => ["userConfig", session?.user?.id ?? "local"],
+    [session?.user?.id],
+  );
 
-  useEffect(() => {
-    queryClient.refetchQueries({ queryKey: ["user-config"] });
-  }, [adapter]);
-
-  const {
-    data: config = undefined,
-    isLoading,
-  } = useQuery({
-    queryKey: ["user-config"],
-    queryFn: adapter.load,
-    staleTime: Infinity,
-    enabled: !isPending,
-  });
-
-  const mutation = useMutation({
-    mutationFn: async (newConfig: Partial<UserConfig>) => {
-      if (isPending) {
-        throw new Error("Session is still pending, cannot update config");
+  // useQuery to fetch the user configuration.
+  const { data: configData, isLoading: isConfigLoading } = useQuery({
+    queryKey: queryKey,
+    queryFn: async () => {
+      // Select the adapter based on the user's login state.
+      const adapter = userConfigAdapterMap[persistenceMode];
+      if (!adapter) {
+        console.warn(`No storage adapter found for mode: ${persistenceMode}`);
+        return defaultUserConfig;
       }
-      const merged = { ...config, ...newConfig };
-      const parsed = UserConfigSchema.parse(merged);
-      await adapter.save(parsed);
-      return parsed;
+      const loadedConfig = await adapter.load();
+      // Ensure we always return a valid config object.
+      return loadedConfig ? UserConfigSchema.parse(loadedConfig) : defaultUserConfig;
     },
-    onSuccess: (data) => {
-      queryClient.setQueryData(["user-config"], data);
+    // This ensures that if a user logs in, we don't flash the old 'local' data.
+    enabled: !isSessionLoading,
+  });
+
+  // useMutation for updating the configuration.
+  const { mutateAsync: updateConfigMutation } = useMutation({
+    mutationFn: async (newConfig: Partial<UserConfig>) => {
+      // Select the same adapter for saving.
+      const adapter = userConfigAdapterMap[persistenceMode];
+      if (!adapter?.save) throw new Error("Saving is not supported.");
+
+      // Merge the new config with the existing one.
+      const currentConfig = configData ?? defaultUserConfig;
+      const mergedConfig: UserConfig = { ...currentConfig, ...newConfig };
+      await adapter.save(mergedConfig);
+      return mergedConfig;
+    },
+    // After a successful mutation, update the query data.
+    onSuccess: (updatedConfig) => {
+      console.log("User config updated:", updatedConfig);
+      queryClient.setQueryData(queryKey, updatedConfig);
     },
   });
 
-  const updateConfig = async (newConfig: Partial<UserConfig>) => {
-    await mutation.mutateAsync(newConfig);
+  // The final config object, falling back to default if still loading.
+  const config = configData ?? defaultUserConfig;
+
+  const value = {
+    config,
+    updateConfig: updateConfigMutation,
+    // The overall loading state is true if the session or the config is loading.
+    isLoading: isSessionLoading || isConfigLoading,
   };
 
-  if (isLoading || !config) {
-    return <div>Loading user config...</div>;
-  }
-
   return (
-    <UserConfigContext.Provider value={{ config, updateConfig }}>
+    <UserConfigContext.Provider value={value}>
       {children}
     </UserConfigContext.Provider>
   );

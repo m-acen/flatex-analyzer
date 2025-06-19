@@ -4,6 +4,21 @@ export interface StorageAdapter<T> {
   clear?: () => Promise<void>;
 }
 
+export function createRamStorageAdapter<T>(defaultValue: T): StorageAdapter<T> {
+  let value = {...defaultValue};
+  return {
+    load: async () => {
+      return value;
+    },
+    save: async (data: T) => {
+      value = data;
+    },
+    clear: async () => {
+      value = defaultValue;
+    },
+  };
+}
+
 export function createLocalStorageAdapter<T>(key: string): StorageAdapter<T> {
   return {
     load: async () => {

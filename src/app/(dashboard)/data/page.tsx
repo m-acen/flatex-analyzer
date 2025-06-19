@@ -21,7 +21,7 @@ import ReactPlayer from "react-player";
 import { DataPersistenceMode } from "@/lib/user-config";
 import { useUserConfig } from "@/hooks/use-user-config";
 
-export function PersistenceModeSelect() {
+function PersistenceModeSelect() {
   const { config, updateConfig } = useUserConfig();
 
   const handleChange = async (event: SelectChangeEvent) => {

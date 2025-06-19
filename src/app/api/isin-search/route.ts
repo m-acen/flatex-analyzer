@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import PQueue from "p-queue";
 import { LRUCache } from "lru-cache";
-import { fetchTickerData } from "@/features/dashboard/server/fetchTickerData";
+import { fetchTickerData } from "@/features/dashboard/server/fetch-ticker-symbol";
 import { ISINQuerySchema } from "@/features/dashboard/types/yahoo-finance-schemas";
-import { searchSymbol } from "@/features/dashboard/server/searchSymbol";
+import { searchSymbol } from "@/features/dashboard/server/search-symbol";
 import { cache } from "@/lib/cache";
 
 const isinSymbolCache = new LRUCache<string, string>({
