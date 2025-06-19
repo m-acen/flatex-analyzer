@@ -1,22 +1,9 @@
-make into dashboard with sidebar
-
-- references:
-https://mui.com/toolpad/core/templates/nextjs-dashboard (dont use toolpad, seems to early to use)
-https://mui.com/material-ui/react-drawer/#mini-variant-drawer
-https://mui.com/material-ui/react-drawer/#responsive-drawer
-
-    
-- sidebar items:
-    - data
-        - see uploaded data sets (upload timestamp, rows, type)
-        - manage persistence mode
-            - session (no persistence)
-            - localstorage (browser)
-            - encrypted server (between devices) - only available logged in
-    - portfolio
-        - overview
-        - assets
-        - performance
-    - profile + settings
-        - show values
-        - logout/log in/delete
+- set up staging environment
+- move data persist to route
+- update ui
+ - data
+  - bento
+  - block server persistence when logged out
+  - header
+ - sidebar on mobile
+- test on staging / mobile
