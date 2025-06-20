@@ -22,6 +22,7 @@ import { DataPersistenceMode } from "@/lib/user-config-schema";
 import { useUserConfig } from "@/hooks/use-user-config";
 import { useSession } from "@/lib/auth-client";
 import { useEncryptionKey } from "@/hooks/use-encryption-key";
+import EncryptionKeyManager from "@/components/encryption-key-manager";
 
 function PersistenceModeSelect() {
   const { config, updateConfig } = useUserConfig();
@@ -49,11 +50,6 @@ function PersistenceModeSelect() {
         label="Persistence Mode"
         onChange={handleChange}
       >
-        {Object.values(DataPersistenceMode).map((value) => (
-          <MenuItem key={value} value={value}>
-            {value.charAt(0).toUpperCase() + value.slice(1)}
-          </MenuItem>
-        ))}
         <MenuItem key={DataPersistenceMode.NONE} value={DataPersistenceMode.NONE}>
           Keine Datenspeicherung
         </MenuItem>
@@ -79,8 +75,6 @@ export default function DataPage() {
     deleteAccountDataSet,
     error,
   } = useRawData();
-
-  const { key } = useEncryptionKey();
 
   const totalDepotRows = parsedDepotTransactions.length;
   const totalAccountRows = parsedAccountTransactions.length;
@@ -134,7 +128,7 @@ export default function DataPage() {
       </Grid>
 
       <PersistenceModeSelect />
-      <Typography>{key}</Typography>
+      <EncryptionKeyManager/>
 
 
       <Box mt={4}>
