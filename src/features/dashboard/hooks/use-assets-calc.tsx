@@ -150,7 +150,7 @@ export function useAssetsCalc(depotItems: DepotItem[]) {
       ? convertToEuroPrice(
           item?.tickerData?.regularMarketPrice,
           getClosestConversionRates(todayString, conversionRates.rates),
-          item.tickerData.currency
+          (item.tickerData?.financialCurrency || item.tickerData?.currency) ?? "EUR"
         )
       : null;
     let currentPositionValue = priceDataAvailable
@@ -214,12 +214,12 @@ export function useAssetsCalc(depotItems: DepotItem[]) {
                 ? convertToEuroPrice(
                     priceHistory.prices[ticker][index - 1],
                     lastFoundConversionRates,
-                    asset.tickerData?.currency
+                    (asset.tickerData?.financialCurrency || asset.tickerData?.currency) ?? "EUR"
                   )
                 : convertToEuroPrice(
                     price,
                     lastFoundConversionRates,
-                    asset.tickerData?.currency
+                    (asset.tickerData?.financialCurrency || asset.tickerData?.currency) ?? "EUR"
                   ),
           };
         });
