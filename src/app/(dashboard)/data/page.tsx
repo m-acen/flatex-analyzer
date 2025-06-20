@@ -20,9 +20,13 @@ import { AttachMoney, ShowChart } from "@mui/icons-material";
 import ReactPlayer from "react-player";
 import { DataPersistenceMode } from "@/lib/user-config-schema";
 import { useUserConfig } from "@/hooks/use-user-config";
+import { useSession } from "@/lib/auth-client";
+import { useEncryptionKey } from "@/hooks/use-encryption-key";
 
 function PersistenceModeSelect() {
   const { config, updateConfig } = useUserConfig();
+
+  const { data } = useSession();
 
   const handleChange = async (event: SelectChangeEvent) => {
     const newMode = event.target.value as DataPersistenceMode;
@@ -37,7 +41,7 @@ function PersistenceModeSelect() {
   }
   return (
     <FormControl fullWidth>
-      <InputLabel id="persistence-mode-label">Persistence Mode</InputLabel>
+      <InputLabel id="persistence-mode-label">Speichermodus</InputLabel>
       <Select
         labelId="persistence-mode-label"
         id="persistence-mode-select"
@@ -50,6 +54,15 @@ function PersistenceModeSelect() {
             {value.charAt(0).toUpperCase() + value.slice(1)}
           </MenuItem>
         ))}
+        <MenuItem key={DataPersistenceMode.NONE} value={DataPersistenceMode.NONE}>
+          Keine Datenspeicherung
+        </MenuItem>
+        <MenuItem key={DataPersistenceMode.LOCAL} value={DataPersistenceMode.LOCAL}>
+          Lokale Speicherung
+        </MenuItem>
+        <MenuItem disabled={data == null} key={DataPersistenceMode.SERVER} value={DataPersistenceMode.SERVER}>
+          Server-Speicherung
+        </MenuItem>
       </Select>
     </FormControl>
   );
@@ -67,6 +80,8 @@ export default function DataPage() {
     error,
   } = useRawData();
 
+  const { key } = useEncryptionKey();
+
   const totalDepotRows = parsedDepotTransactions.length;
   const totalAccountRows = parsedAccountTransactions.length;
 
@@ -74,7 +89,7 @@ export default function DataPage() {
     <Box width={"100%"} sx={{ flexGrow: 1 }} p={2}>
       <Box mb={4}>
         <Typography variant="h4" gutterBottom>
-          Transaktionsdaten
+          Daten
         </Typography>
         <CsvDropzoneUploader
           onParsed={(data, fileName) => handleRawCsvUpload(data, fileName)}
@@ -119,6 +134,8 @@ export default function DataPage() {
       </Grid>
 
       <PersistenceModeSelect />
+      <Typography>{key}</Typography>
+
 
       <Box mt={4}>
         <Typography variant="body1">
