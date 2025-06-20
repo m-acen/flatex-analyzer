@@ -11,3 +11,8 @@ export interface RawDataSet<T> {
 export interface RawAccountTransactionDataSet extends RawDataSet<AccountTransaction> {}
 
 export interface RawDepotTransactionDataSet extends RawDataSet<DepotTransaction> {}
+
+export type RawDataState = {
+  depot: RawDepotTransactionDataSet[];
+  account: RawAccountTransactionDataSet[];
+};

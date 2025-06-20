@@ -18,7 +18,7 @@ import { useRawData } from "@/features/dashboard/hooks/use-raw-transaction-data-
 import { TransactionDataCard } from "@/features/dashboard/components/transaction-data-card";
 import { AttachMoney, ShowChart } from "@mui/icons-material";
 import ReactPlayer from "react-player";
-import { DataPersistenceMode } from "@/lib/user-config";
+import { DataPersistenceMode } from "@/lib/user-config-schema";
 import { useUserConfig } from "@/hooks/use-user-config";
 
 function PersistenceModeSelect() {

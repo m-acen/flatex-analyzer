@@ -6,7 +6,7 @@ import {
   StorageAdapter,
 } from "@/lib/storage-adapter";
 import { useSession } from "@/lib/auth-client";
-import { UserConfigSchema, DataPersistenceMode } from "@/lib/user-config";
+import { UserConfigSchema, DataPersistenceMode } from "@/lib/user-config-schema";
 import {
   clearUserConfig,
   loadUserConfig,

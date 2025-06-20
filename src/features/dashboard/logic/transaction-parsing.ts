@@ -6,6 +6,7 @@ import {
 } from "../types/account-transaction";
 import { parseDate } from "../utils/date-parse";
 import { DepotTransaction, ParsedDepotTransaction, DepotTransactionSchema } from "../types/depot-transaction";
+import { anonymizeAccountTransactions, anonymizeDepotTransactions } from "./anonymize-transactions";
 
 function parseAccountTransactionDataItem(
   data: AccountTransaction
@@ -30,7 +31,7 @@ export function handleParseAccountTransactionData(
   const AccountTransactionArraySchema = z.array(AccountTransactionSchema);
   const result = AccountTransactionArraySchema.safeParse(data);
   if (result.success) {
-    const tx = result.data;
+    const tx = anonymizeAccountTransactions(result.data);
     const parsedTx = tx.map(parseAccountTransactionDataItem);
     parsedTx.sort((a, b) => a.Buchtag.getTime() - b.Buchtag.getTime());
     return parsedTx;
@@ -80,7 +81,7 @@ export function handleParseDepotTransactionData(
   const DepotTransactionArraySchema = z.array(DepotTransactionSchema);
   const result = DepotTransactionArraySchema.safeParse(data);
   if (result.success) {
-    const tx: DepotTransaction[] = result.data;
+    const tx: DepotTransaction[] = anonymizeDepotTransactions(result.data);
     const parsedTx = tx.map(parseDepotTransactionDataItem);
     parsedTx.sort((a, b) => a.Buchtag.getTime() - b.Buchtag.getTime());
     return parsedTx;

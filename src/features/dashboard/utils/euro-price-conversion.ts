@@ -18,8 +18,8 @@ export function convertToEuroPrice(
 
   const conversionRate = currencies[normalizedCurrency];
   if (!conversionRate) {
-    console.error(currencies);
-    throw new Error(`Conversion rate for ${currency} not found`);
+    console.error(`Conversion rate for ${currency} not found`);
+    return 0;
   }
 
   return normalizedPrice / conversionRate;

@@ -2,9 +2,6 @@ import "./globals.css";
 import { Roboto } from "next/font/google";
 import { Metadata } from "next";
 import ClientWrapper from "@/components/client-wrapper";
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
-import AuthDialog from "@/features/auth/components/auth-dialog";
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -58,7 +55,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={roboto.variable}>
+    <html suppressHydrationWarning lang="en" className={roboto.variable}>
       <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       <body>
         <div className="min-h-svh flex flex-col justify-between">

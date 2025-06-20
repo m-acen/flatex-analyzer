@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { userConfig } from "@/db/schema/user-config";
 import { UserConfig } from "@/hooks/use-user-config";
-import { UserConfigSchema } from "@/lib/user-config";
+import { UserConfigSchema } from "@/lib/user-config-schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 

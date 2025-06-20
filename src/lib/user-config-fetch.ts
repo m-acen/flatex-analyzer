@@ -1,5 +1,5 @@
 import { UserConfig } from "@/hooks/use-user-config";
-import { UserConfigSchema } from "@/lib/user-config";
+import { UserConfigSchema } from "@/lib/user-config-schema";
 
 /**
  * Loads the current user's config via API.

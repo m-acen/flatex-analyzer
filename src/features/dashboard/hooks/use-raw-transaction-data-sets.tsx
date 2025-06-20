@@ -10,6 +10,7 @@ import React, {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   RawAccountTransactionDataSet,
+  RawDataState,
   RawDepotTransactionDataSet,
 } from "../types/raw-transaction-data-set";
 import {
@@ -26,15 +27,10 @@ import {
   StorageAdapter,
 } from "@/lib/storage-adapter";
 import { useUserConfig } from "@/hooks/use-user-config";
-import { DataPersistenceMode } from "@/lib/user-config";
-import { clearRawDataSets, loadRawDataSets, saveRawDataSets } from "../server/data-persistence-actions";
-
+import { DataPersistenceMode } from "@/lib/user-config-schema";
+import { createServerAdapter } from "@/lib/raw-data-server-storage-adapter";
+import { useEncryptionKey } from "@/hooks/use-encryption-key";
 // server adapter: data-persistence-actions.ts + encrypt/decrypt. key in params
-
-type RawDataState = {
-  depot: RawDepotTransactionDataSet[];
-  account: RawAccountTransactionDataSet[];
-};
 
 interface RawDataContextType {
   depotDataSets: RawDepotTransactionDataSet[];
@@ -49,69 +45,9 @@ interface RawDataContextType {
   deleteAccountDataSet: (id: string) => void;
 }
 
-function encryptData<T>(data: T, salt: string): string {
-  // Implement your encryption logic here
-  // This is a placeholder, actual implementation will depend on your encryption method
-  return JSON.stringify(data); // Replace with actual encryption
-}
-
-function decryptData<T>(data: string, salt: string): T {
-  // Implement your decryption logic here
-  // This is a placeholder, actual implementation will depend on your encryption method
-  return JSON.parse(data); // Replace with actual decryption
-}
-
-function createServerAdapter(salt: string): StorageAdapter<RawDataState> {
-  return {
-    load: async () => {
-      // Implement server-side loading logic here
-      // This is a placeholder, actual implementation will depend on your server setup
-      const data = await loadRawDataSets();
-      console.log("Loaded raw data from server:", data);
-      const decryptedDepot = data.depot.map(d => {
-        return ({
-          ...d,
-          data: decryptData<DepotTransaction[]>(d.encryptedData, salt)
-        });
-      });
-      const decryptedAccount = data.account.map(a => {
-        return ({
-          ...a, data:
-            decryptData<AccountTransaction[]>(a.encryptedData, salt)
-        });
-      });
-      const decryptedData = {
-        depot: decryptedDepot,
-        account: decryptedAccount,
-      }
-      return decryptedData;
-    },
-    save: async (data: RawDataState) => {
-      // Implement server-side saving logic here
-      // This is a placeholder, actual implementation will depend on your server setup
-      const encryptedDepot = data.depot.map(d => ({
-        ...d,
-        encryptedData: encryptData(d.data, salt),
-      }));
-      const encryptedAccount = data.account.map(a => ({
-        ...a,
-        encryptedData: encryptData(a.data, salt),
-      }));
-      await saveRawDataSets({ depot: encryptedDepot, account: encryptedAccount });
-    },
-    clear: async () => {
-      clearRawDataSets();
-    }
-  };
-}
 
 const RawDataContext = createContext<RawDataContextType | undefined>(undefined);
 const defaultRawData: RawDataState = { depot: [], account: [] };
-const adapterMap: Partial<Record<DataPersistenceMode, StorageAdapter<RawDataState>>> = {
-  local: createLocalStorageAdapter<RawDataState>("raw_transaction_data"),
-  none: createRamStorageAdapter<RawDataState>(defaultRawData),
-  server: createServerAdapter("penis")
-};
 
 export const RawDataProvider = ({ children }: { children: ReactNode }) => {
   const { config, isLoading: isConfigLoading } = useUserConfig();
@@ -119,6 +55,14 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
 
   const queryKey = ["rawTransactionData", config?.dataPersistenceMode];
+
+  const { key } = useEncryptionKey();
+
+  const adapterMap: Partial<Record<DataPersistenceMode, StorageAdapter<RawDataState>>> = {
+    local: createLocalStorageAdapter<RawDataState>("raw_transaction_data"),
+    none: createRamStorageAdapter<RawDataState>(defaultRawData),
+    server: createServerAdapter(key)
+  };
 
   const { data: rawData, isLoading: isDataLoading } = useQuery({
     queryKey: queryKey,
