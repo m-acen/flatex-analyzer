@@ -23,12 +23,15 @@ import {
 } from "@/features/auth/components/auth-switch";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ColorModeToggle } from "@/components/color-mode-toggle";
+import AnalyticsIcon from "@mui/icons-material/Analytics";
+import { RepoButton } from "@/components/repo-button";
 
 const drawerWidth = 240;
 
 const navItems = [
-  { text: "Daten", icon: <Folder />, href: "/data" },
   { text: "Dashboard", icon: <PieChart />, href: "/dashboard" },
+  { text: "Daten", icon: <Folder />, href: "/data" },
 ];
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -148,9 +151,15 @@ export default function MiniDrawer({
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <AnalyticsIcon fontSize="large" color="primary" />
             Flatex Dashboard
           </Typography>
+          <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center", justifyContent: "flex-end" }}>
+            <ColorModeToggle />
+            <RepoButton />
+          </Box>
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
@@ -178,11 +187,11 @@ export default function MiniDrawer({
                   },
                   open
                     ? {
-                        justifyContent: "initial",
-                      }
+                      justifyContent: "initial",
+                    }
                     : {
-                        justifyContent: "center",
-                      },
+                      justifyContent: "center",
+                    },
                 ]}
               >
                 <ListItemIcon
@@ -193,11 +202,11 @@ export default function MiniDrawer({
                     },
                     open
                       ? {
-                          mr: 3,
-                        }
+                        mr: 3,
+                      }
                       : {
-                          mr: "auto",
-                        },
+                        mr: "auto",
+                      },
                   ]}
                 >
                   {item.icon}
@@ -207,11 +216,11 @@ export default function MiniDrawer({
                   sx={[
                     open
                       ? {
-                          opacity: 1,
-                        }
+                        opacity: 1,
+                      }
                       : {
-                          opacity: 0,
-                        },
+                        opacity: 0,
+                      },
                   ]}
                 />
               </ListItemButton>
@@ -219,7 +228,7 @@ export default function MiniDrawer({
           ))}
           <Box sx={{ flexGrow: 1 }} />
           <Divider />
-          <ListItem disablePadding sx={{ display: "block"}}>
+          <ListItem disablePadding sx={{ display: "block" }}>
             <MobileAuthSwitch variant={open ? "text" : "icon"} />
           </ListItem>
         </List>

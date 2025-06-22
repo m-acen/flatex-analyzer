@@ -63,6 +63,11 @@ export default function CsvDropzoneUploader({
         cursor: "pointer",
         transition: "all 0.3s ease",
         width: "100%",
+        height: "100%",
+        alignItems: "center",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
         backgroundColor: alpha(palette.primary.main, 0.1), 
         "&:hover": {
           backgroundColor: alpha(palette.primary.main, 0.2),

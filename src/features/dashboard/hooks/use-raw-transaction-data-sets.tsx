@@ -64,6 +64,10 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
     server: createServerAdapter(key)
   };
 
+  useEffect(() => {
+    queryClient.refetchQueries();
+  }, [key]);
+
   const { data: rawData, isLoading: isDataLoading } = useQuery({
     queryKey: queryKey,
     queryFn: async () => {

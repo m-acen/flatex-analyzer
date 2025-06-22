@@ -37,7 +37,7 @@ export default function EncryptionKeyManager() {
   };
 
   return (
-    <Card variant="outlined" sx={{ maxWidth: 600, margin: "auto", mt: 4 }}>
+    <Card variant="outlined">
       <CardContent>
         <Typography variant="h6" gutterBottom>
           Encryption Key

@@ -7,6 +7,7 @@ import {
   ListItemIcon,
   Divider,
   Button,
+  Typography,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -48,9 +49,9 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
         </Avatar>
         {
           variant === "text" ? (
-            <span style={{ marginLeft: 8, color: theme.palette.text.primary }}>
+            <Typography color="textPrimary" ml={2}>
               {username}
-            </span>
+            </Typography>
           ) : null
         }
       </Button>
