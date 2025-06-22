@@ -12,7 +12,7 @@ export function CtaButton() {
       LinkComponent={Link}
       endIcon={<ArrowForward fontSize="small" />}
     >
-      Loslegen
+      Dashboard
     </Button>
   );
 }

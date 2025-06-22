@@ -11,7 +11,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Flatex Analyzer",
+  title: "Flatex Dashboard",
   description:
     "Flatex Portfolio Statistik: Überblick über Dividenden, Verkäufe und Performance deines Flatex Depots",
   keywords: [
@@ -22,17 +22,17 @@ export const metadata: Metadata = {
     "Dividenden Tracking",
   ],
   openGraph: {
-    title: "Flatex Analyzer",
+    title: "Flatex Dashboard",
     description:
       "Flatex Portfolio Statistik: Überblick über Dividenden, Verkäufe und Performance deines Flatex Depots",
     url: "https://flatex-analyzer.jhiga.com",
-    siteName: "Flatex Analyzer",
+    siteName: "Flatex Dashboard",
     images: [
       {
         url: "https://flatex-analyzer.jhiga.com/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Flatex Analyzer Vorschau",
+        alt: "Flatex Dashboard Vorschau",
       },
     ],
     locale: "de_DE",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Flatex Analyzer",
+    title: "Flatex Dashboard",
     description:
       "Flatex Portfolio Statistik: Überblick über Dividenden, Verkäufe und Performance deines Flatex Depots",
     images: ["https://flatex-analyzer.jhiga.com/og-image.png"],

@@ -43,18 +43,19 @@ export default function EncryptionKeyManager() {
           Encryption Key
         </Typography>
 
-        <Box
-          sx={{
-            backgroundColor: "#f5f5f5",
-            padding: 2,
-            borderRadius: 1,
-            wordBreak: "break-all",
-            fontFamily: "monospace",
-            fontSize: "0.9rem",
-          }}
-        >
-          {key || "Loading..."}
-        </Box>
+        <Card variant="outlined">
+          <Box
+            sx={{
+              padding: 2,
+              borderRadius: 1,
+              wordBreak: "break-all",
+              fontFamily: "monospace",
+              fontSize: "0.9rem",
+            }}
+          >
+            {key || "Loading..."}
+          </Box>
+        </Card>
 
         {error && (
           <Alert severity="error" sx={{ mt: 2 }}>

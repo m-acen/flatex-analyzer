@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Flatex Analyzer',
+    name: 'Flatex Dashboard',
     short_name: 'FlatexAnalyzer',
     description: 'Flatex Portfolio Statistik: Überblick über Dividenden, Verkäufe und Performance deines Flatex Depots',
     start_url: '/',

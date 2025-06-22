@@ -68,7 +68,7 @@ export function Header() {
         >
           <AnalyticsIcon fontSize="medium" color="primary" />
           <Typography variant="body1" color="text.primary">
-            Flatex Analyzer
+            Flatex Dashboard
           </Typography>
         </Link>
         <IconButton onClick={toggleDrawer(false)}>
@@ -83,9 +83,6 @@ export function Header() {
           height: "100%",
         }}
       >
-        <ListItem>
-          <RepoButton fullWidth />
-        </ListItem>
         <ListItem>
           <ColorModeToggle fullWidth />
         </ListItem>
@@ -127,7 +124,7 @@ export function Header() {
       >
         <AnalyticsIcon fontSize="large" color="primary" />
         <Typography variant="h6" color="text.primary">
-          Flatex Analyzer
+          Flatex Dashboard
         </Typography>
       </Link>
       <Box sx={{ flexGrow: 1 }} />
@@ -152,7 +149,6 @@ export function Header() {
       ) : (
         <Box sx={{ display: "flex", gap: 2 }}>
           <ColorModeToggle />
-          <RepoButton />
           {pathname !== "/dashboard" && <CtaButton />}
           <AuthSwitch />
         </Box>
