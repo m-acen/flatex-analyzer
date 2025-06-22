@@ -6,6 +6,7 @@ export interface RawDataSet<T> {
     data: T[];
     fileName: string;
     timestamp: Date;
+    valid: boolean;
 }
 
 export interface RawAccountTransactionDataSet extends RawDataSet<AccountTransaction> {}

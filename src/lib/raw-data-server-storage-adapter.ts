@@ -91,22 +91,52 @@ export function createServerAdapter(key: string): StorageAdapter<RawDataState> {
       const data = await loadRawDataSets();
 
       const decryptedDepot: RawDepotTransactionDataSet[] = await Promise.all(
-        data.depot.map(async (d) => ({
-          fileName: d.fileName,
-          id: d.id,
-          timestamp: d.timestamp,
-          data: await decryptData<DepotTransaction[]>(d.encryptedData, key),
-        }))
+        data.depot.map(async (d) => {
+          let decryptedData: DepotTransaction[] = [];
+          let error: string | null = null;
+          try {
+            decryptedData = await decryptData<DepotTransaction[]>(
+              d.encryptedData,
+              key
+            );
+          } catch (e) {
+            error = `Failed to decrypt depot data: ${
+              e instanceof Error ? e.message : String(e)
+            }`;
+          }
+          return {
+            fileName: d.fileName,
+            id: d.id,
+            timestamp: d.timestamp,
+            data: decryptedData,
+            valid: error === null,
+          };
+        })
       );
 
       const decryptedAccount: RawAccountTransactionDataSet[] =
         await Promise.all(
-          data.account.map(async (a) => ({
-            fileName: a.fileName,
-            id: a.id,
-            timestamp: a.timestamp,
-            data: await decryptData<AccountTransaction[]>(a.encryptedData, key),
-          }))
+          data.account.map(async (a) => {
+            let decryptedData: AccountTransaction[] = [];
+            let error: string | null = null;
+            try {
+              decryptedData = await decryptData<AccountTransaction[]>(
+                a.encryptedData,
+                key
+              );
+            } catch (e) {
+              error = `Failed to decrypt account data: ${
+                e instanceof Error ? e.message : String(e)
+              }`;
+            }
+            return {
+              fileName: a.fileName,
+              id: a.id,
+              timestamp: a.timestamp,
+              data: decryptedData,
+              valid: error === null,
+            };
+          })
         );
 
       return { depot: decryptedDepot, account: decryptedAccount };

@@ -154,13 +154,13 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
     if (handleParseDepotTransactionData(csvData)) {
       const newDepotData = [
         ...currentData.depot,
-        { id, data: csvData, fileName, timestamp },
+        { id, data: csvData, fileName, timestamp, valid: true },
       ];
       updateMutation.mutate({ ...currentData, depot: newDepotData });
     } else if (handleParseAccountTransactionData(csvData)) {
       const newAccountData = [
         ...currentData.account,
-        { id, data: csvData, fileName, timestamp },
+        { id, data: csvData, fileName, timestamp, valid: true },
       ];
       updateMutation.mutate({ ...currentData, account: newAccountData });
     } else {
