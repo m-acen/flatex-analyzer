@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { z } from "zod";
 import {
-  createLocalStorageAdapter,
+  createIndexedDBAdapter,
   StorageAdapter,
 } from "@/lib/storage-adapter";
 import { useSession } from "@/lib/auth-client";
@@ -40,7 +40,7 @@ const STORAGE_KEY = "user_config";
 const userConfigAdapterMap: Partial<
   Record<DataPersistenceMode, StorageAdapter<UserConfig>>
 > = {
-  local: createLocalStorageAdapter<UserConfig>(STORAGE_KEY),
+  local: createIndexedDBAdapter<UserConfig>(STORAGE_KEY),
   server: {
     load: loadUserConfig,
     save: saveUserConfig,

@@ -26,6 +26,7 @@
     "dotenv": "^16.5.0",
     "drizzle-kit": "^0.31.1",
     "drizzle-orm": "^0.44.2",
+    "idb-keyval": "^6.2.2",
     "lru-cache": "^11.1.0",
     "next": "15.3.3",
     "node-postgres": "^0.6.2",

@@ -23,6 +23,7 @@ import { useUserConfig } from "@/hooks/use-user-config";
 import { useSession } from "@/lib/auth-client";
 import { useEncryptionKey } from "@/hooks/use-encryption-key";
 import EncryptionKeyManager from "@/components/encryption-key-manager";
+import { useState, useEffect } from "react";
 
 function PersistenceModeSelect() {
   const { config, updateConfig } = useUserConfig();
@@ -36,19 +37,16 @@ function PersistenceModeSelect() {
       await updateConfig({ dataPersistenceMode: newMode });
     }
   };
-  console.log("PersistenceModeSelect rendered with mode:", config?.dataPersistenceMode);
-  if (!config) {
-    return null; // or a loading spinner if you prefer
-  }
   return (
     <FormControl fullWidth>
       <InputLabel id="persistence-mode-label">Speichermodus</InputLabel>
       <Select
         labelId="persistence-mode-label"
         id="persistence-mode-select"
-        value={config?.dataPersistenceMode}
+        value={config?.dataPersistenceMode || ""}
         label="Persistence Mode"
         onChange={handleChange}
+        disabled={!config}
       >
         <MenuItem key={DataPersistenceMode.NONE} value={DataPersistenceMode.NONE}>
           Keine Datenspeicherung
@@ -78,6 +76,13 @@ export default function DataPage() {
 
   const totalDepotRows = parsedDepotTransactions.length;
   const totalAccountRows = parsedAccountTransactions.length;
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   return (
     <Box width={"100%"} sx={{ flexGrow: 1 }} p={2}>
@@ -128,7 +133,7 @@ export default function DataPage() {
       </Grid>
 
       <PersistenceModeSelect />
-      <EncryptionKeyManager/>
+      <EncryptionKeyManager />
 
 
       <Box mt={4}>
@@ -142,10 +147,12 @@ export default function DataPage() {
       <Divider sx={{ my: 4 }} />
 
       <Box mt={2} mb={4}>
-        <ReactPlayer
-          url="https://www.youtube.com/watch?v=AlZtmcSHVLA"
-          controls
-        />
+        {isClient && (
+          <ReactPlayer
+            url="https://www.youtube.com/watch?v=AlZtmcSHVLA"
+            controls
+          />
+        )}
       </Box>
       <Snackbar
         open={error !== null}

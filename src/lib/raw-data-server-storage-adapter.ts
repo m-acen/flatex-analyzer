@@ -1,9 +1,5 @@
-import {
-  AccountTransaction,
-} from "@/features/dashboard/types/account-transaction";
-import {
-  DepotTransaction,
-} from "@/features/dashboard/types/depot-transaction";
+import { AccountTransaction } from "@/features/dashboard/types/account-transaction";
+import { DepotTransaction } from "@/features/dashboard/types/depot-transaction";
 import {
   RawDepotTransactionDataSet,
   RawAccountTransactionDataSet,
@@ -21,7 +17,11 @@ function base64ToUint8Array(base64: string): Uint8Array {
 }
 
 function uint8ArrayToBase64(arr: Uint8Array): string {
-  return btoa(String.fromCharCode(...arr));
+  let binary = "";
+  for (let i = 0; i < arr.length; i++) {
+    binary += String.fromCharCode(arr[i]);
+  }
+  return btoa(binary);
 }
 
 export function generateKeyBase64(): string {
@@ -30,6 +30,7 @@ export function generateKeyBase64(): string {
 }
 
 async function encryptData<T>(data: T, base64Key: string): Promise<string> {
+  console.log("Encrypting data with key:", base64Key);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const keyBuffer = base64ToUint8Array(base64Key);
 
@@ -55,7 +56,10 @@ async function encryptData<T>(data: T, base64Key: string): Promise<string> {
   return uint8ArrayToBase64(combined);
 }
 
-async function decryptData<T>(encryptedBase64: string, base64Key: string): Promise<T> {
+async function decryptData<T>(
+  encryptedBase64: string,
+  base64Key: string
+): Promise<T> {
   const combined = base64ToUint8Array(encryptedBase64);
   const iv = combined.slice(0, 12);
   const ciphertext = combined.slice(12);
@@ -95,14 +99,15 @@ export function createServerAdapter(key: string): StorageAdapter<RawDataState> {
         }))
       );
 
-      const decryptedAccount: RawAccountTransactionDataSet[] = await Promise.all(
-        data.account.map(async (a) => ({
-          fileName: a.fileName,
-          id: a.id,
-          timestamp: a.timestamp,
-          data: await decryptData<AccountTransaction[]>(a.encryptedData, key),
-        }))
-      );
+      const decryptedAccount: RawAccountTransactionDataSet[] =
+        await Promise.all(
+          data.account.map(async (a) => ({
+            fileName: a.fileName,
+            id: a.id,
+            timestamp: a.timestamp,
+            data: await decryptData<AccountTransaction[]>(a.encryptedData, key),
+          }))
+        );
 
       return { depot: decryptedDepot, account: decryptedAccount };
     },
@@ -122,7 +127,10 @@ export function createServerAdapter(key: string): StorageAdapter<RawDataState> {
         }))
       );
 
-      await saveRawDataSets({ depot: encryptedDepot, account: encryptedAccount });
+      await saveRawDataSets({
+        depot: encryptedDepot,
+        account: encryptedAccount,
+      });
     },
 
     clear: async () => {

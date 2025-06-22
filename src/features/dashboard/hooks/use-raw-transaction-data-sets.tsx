@@ -22,7 +22,7 @@ import {
 import { AccountTransaction, ParsedAccountTransaction } from "../types/account-transaction";
 import { DepotTransaction, ParsedDepotTransaction } from "../types/depot-transaction";
 import {
-  createLocalStorageAdapter,
+  createIndexedDBAdapter,
   createRamStorageAdapter,
   StorageAdapter,
 } from "@/lib/storage-adapter";
@@ -59,7 +59,7 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
   const { key } = useEncryptionKey();
 
   const adapterMap: Partial<Record<DataPersistenceMode, StorageAdapter<RawDataState>>> = {
-    local: createLocalStorageAdapter<RawDataState>("raw_transaction_data"),
+    local: createIndexedDBAdapter<RawDataState>("raw_transaction_data"),
     none: createRamStorageAdapter<RawDataState>(defaultRawData),
     server: createServerAdapter(key)
   };
@@ -96,6 +96,7 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
   const previousMode = useRef<DataPersistenceMode>(null);
 
   useEffect(() => {
+    console.log("Checking for initial mode change...");
     if (isConfigLoading || isDataLoading) return;
     const currentMode = config?.dataPersistenceMode;
     if (!previousMode.current) {
@@ -105,24 +106,29 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
   }, [config?.dataPersistenceMode, isConfigLoading, isDataLoading]);
 
   useEffect(() => {
-    if (isConfigLoading || isDataLoading || !previousMode.current) return;
-    const newMode = config?.dataPersistenceMode;
-    const oldMode = previousMode.current;
+    console.log("Checking for data porting...");
+    if (isConfigLoading || isDataLoading) return;
 
-    if (newMode !== oldMode) {
-      const oldAdapter = adapterMap[oldMode];
-      const newAdapter = adapterMap[newMode];
+    const currentMode = config?.dataPersistenceMode;
+    const lastMode = previousMode.current;
 
-      if (oldAdapter && newAdapter) {
-        portDataMutation.mutate({ oldAdapter, newAdapter });
-      }
-      previousMode.current = newMode;
+    if (!currentMode || currentMode === lastMode) return;
+
+    const oldAdapter = adapterMap[lastMode ?? currentMode];
+    const newAdapter = adapterMap[currentMode];
+
+    if (lastMode && oldAdapter && newAdapter) {
+      portDataMutation.mutate({ oldAdapter, newAdapter });
     }
-  }, [config?.dataPersistenceMode, portDataMutation]);
+
+    previousMode.current = currentMode;
+  }, [config?.dataPersistenceMode, isConfigLoading, isDataLoading]);
+
 
   // --- Mutation for User-Initiated Updates ---
   const updateMutation = useMutation({
     mutationFn: async (newData: RawDataState) => {
+      console.log("Saving new raw data");
       const adapter = adapterMap[config?.dataPersistenceMode];
       if (!adapter?.save) throw new Error("Saving is not supported.");
       await adapter.save(newData);
@@ -132,11 +138,13 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
     },
     onError: (err) => {
       setError(`Failed to save data: ${(err as Error).message}`);
+      console.error("Error saving raw data:", err);
     }
   });
 
   // --- Event Handlers ---
   const handleRawCsvUpload = (csvData: unknown[], fileName: string) => {
+    console.log("Handling CSV upload:", fileName);
     /* ... (handler logic remains the same) ... */
     setError(null);
     const id = crypto.randomUUID?.() ?? `${Date.now()}`;
