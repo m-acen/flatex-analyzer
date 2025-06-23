@@ -2,7 +2,10 @@ import yahooFinance from "yahoo-finance2";
 import { QuoteSearchSchema } from "../types/yahoo-finance-schemas";
 
 export async function searchSymbol(isin: string) {
-  const searchResult = await yahooFinance.search(isin);
+  const searchResult = await yahooFinance.search(isin, {
+    region: "US",
+  });
+  console.log("Search result for ISIN:", isin, searchResult);
   const match = searchResult.quotes?.[0];
 
   const parsed = QuoteSearchSchema.safeParse(match);
