@@ -6,8 +6,8 @@ import InfoIcon from "@mui/icons-material/Info";
 export default function InfoBox({ text }: { text: string }) {
   
   const theme = useTheme();
-  const mainColor = alpha(theme.palette.secondary.main, 0.1);
-  const borderColor = alpha(theme.palette.secondary.main, 0.5);
+  const mainColor = alpha(theme.palette.primary.main, 0.1);
+  const borderColor = alpha(theme.palette.primary.main, 0.5);
   return (
     <Box
       display="flex"
@@ -19,8 +19,8 @@ export default function InfoBox({ text }: { text: string }) {
       py={1.5}
       my={2}
     >
-      <InfoIcon color="secondary" sx={{ mr: 1 }} />
-      <Typography variant="body2" color="secondary">
+      <InfoIcon color="primary" sx={{ mr: 1 }} />
+      <Typography variant="body2" color="primary">
         {text}
       </Typography>
     </Box>

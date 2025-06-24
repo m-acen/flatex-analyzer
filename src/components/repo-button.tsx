@@ -20,7 +20,7 @@ export function RepoButton(
     <Button
       variant="outlined"
       size="large"
-      color="secondary"
+      color="primary"
       startIcon={<GitHubIcon />}
       href={`https://github.com/${REPO}`}
       target="_blank"

@@ -13,6 +13,9 @@ import Image from "next/image";
 import FAQ from "./faq";
 import { ArrowForward } from "@mui/icons-material";
 import InfoBox from "@/components/info-box";
+import { CtaButton } from "@/components/cta-button";
+import Link from "next/link";
+import { RepoButton } from "@/components/repo-button";
 
 export default function LandingPageContent() {
   const theme = useTheme();
@@ -45,29 +48,14 @@ export default function LandingPageContent() {
                     xs: { fontSize: 16, fontWeight: 500 },
                   },
                 }}
-                color="text.secondary"
+                color="text.primary"
               >
                 Behalte deine Portfolio Performance, trotz Dividenden und
                 Trades, im Blick. Open Source und vollkommen kostenlos.
               </Typography>
               <Stack direction={"row"} spacing={{ lg: 2, xs: 1 }} mt={2}>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  color="secondary"
-                  href="/dashboard/demo"
-                >
-                  Ausprobieren
-                </Button>
-                <Button
-                  variant="contained"
-                  size="large"
-                  color="secondary"
-                  href="/dashboard"
-                  endIcon={<ArrowForward fontSize="small" />}
-                >
-                  Loslegen
-                </Button>
+                <RepoButton />
+                <CtaButton />
               </Stack>
             </Stack>
           </Grid>
@@ -77,7 +65,7 @@ export default function LandingPageContent() {
               width={2746}
               height={1454}
               style={{
-                borderColor: theme.palette.secondary.main,
+                borderColor: theme.palette.primary.main,
               }}
               className="lg:scale-125 lg:mt-6 border blur-gradient-bottom drop rounded-lg overflow-hidden rotate-z-12 rotate-x-[-25deg] rotate-y-[28deg]"
               alt="Screenshot des Dashboards"

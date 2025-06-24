@@ -1,4 +1,4 @@
-# Flatex Analyzer
+# Flatex Dashboard
 
 This is an open source tool for analyzing your Flatex portfolio history.
 

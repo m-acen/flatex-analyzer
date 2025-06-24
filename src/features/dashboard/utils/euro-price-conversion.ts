@@ -1,0 +1,26 @@
+export function convertToEuroPrice(
+  price: number,
+  currencies: Record<string, number>,
+  currency: string
+): number {
+  let normalizedPrice = price;
+  let normalizedCurrency = currency.toUpperCase();
+
+  // Special case: GBp (British pence) → divide by 100 to convert to GBP
+  if (currency === "GBp" || currency === "gbp") {
+    normalizedPrice = price / 100;
+    normalizedCurrency = "GBP";
+  }
+
+  if (normalizedCurrency === "EUR") {
+    return normalizedPrice;
+  }
+
+  const conversionRate = currencies[normalizedCurrency];
+  if (!conversionRate) {
+    console.warn(`Conversion rate for ${currency} not found`);
+    return 0;
+  }
+
+  return normalizedPrice / conversionRate;
+}

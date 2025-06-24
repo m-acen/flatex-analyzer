@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import PQueue from "p-queue";
 import { LRUCache } from "lru-cache";
-import { fetchTickerData } from "@/features/portfolio/server/fetchTickerData";
-import { ISINQuerySchema } from "@/features/portfolio/types/yahoo-finance-schemas";
-import { searchSymbol } from "@/features/portfolio/server/searchSymbol";
+import { fetchTickerData } from "@/features/dashboard/server/fetch-ticker-symbol";
+import { ISINQuerySchema } from "@/features/dashboard/types/yahoo-finance-schemas";
+import { searchSymbol } from "@/features/dashboard/server/search-symbol";
 import { cache } from "@/lib/cache";
+import { removeKnownSymbolWrappers } from "@/features/dashboard/utils/remove-known-symbol-wrappers";
 
 const isinSymbolCache = new LRUCache<string, string>({
   max: 10000,
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest) {
       }
       if (!symbol) {
         symbol = await searchSymbol(isin);
+        symbol = removeKnownSymbolWrappers(symbol);
         if (!symbol) {
           return NextResponse.json(
             { error: `No symbol found for ISIN: ${isin}` },
