@@ -1,0 +1,79 @@
+# Datenschutzerklärung
+
+**Stand: Juni 2025**
+
+Der Schutz Ihrer persönlichen Daten ist uns ein besonderes Anliegen. Wir verarbeiten Ihre Daten daher ausschließlich auf Grundlage der gesetzlichen Bestimmungen (DSGVO, TKG 2003). In dieser Datenschutzerklärung informieren wir Sie über die wichtigsten Aspekte der Datenverarbeitung im Rahmen unserer Webanwendung.
+
+## 1. Verantwortlicher
+
+Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
+
+**Johannes Higatzberger**  
+j.jhigatzberger@gmail.com
+
+## 2. Erhobene Daten
+
+### 2.1 Benutzerkonto
+
+Wenn Sie ein Benutzerkonto anlegen, werden folgende personenbezogene Daten verarbeitet:
+
+- E-Mail-Adresse  
+- Passwort (verschlüsselt gespeichert)
+
+Diese Daten dienen ausschließlich der Bereitstellung Ihres Kontos und werden gespeichert, bis Sie den Account löschen.
+
+### 2.2 Hochgeladene Transaktionsdaten (CSV-Dateien)
+
+Sie können CSV-Dateien mit Konto- und Depottransaktionen hochladen. Diese Daten werden **unmittelbar nach dem Upload anonymisiert**. Folgende Felder werden überschrieben:
+
+#### Konto-Transaktionen
+
+- „BIC / BLZ“ → `"anon"`  
+- „IBAN / Kontonummer“ → `"anon"`  
+- „Auftraggeberkonto“ → `"anon"`  
+- „Konto“ → `"anon"`
+
+#### Depot-Transaktionen
+
+- „Depot“ → `"anon"`
+
+Eine personenbezogene Zuordnung ist danach nicht mehr möglich.
+
+## 3. Speicheroptionen für Transaktionsdaten
+
+Sie haben die Wahl zwischen zwei Speicheroptionen:
+
+### 3.1 Lokale Speicherung (Browser)
+
+Wenn Sie die Option **Lokale Speicherung** wählen, werden Ihre anonymisierten Transaktionsdaten in der `IndexedDB` Ihres Browsers gespeichert (Pfad: `keyval-store/raw_transaction_data`). Diese Daten verbleiben ausschließlich auf Ihrem Gerät.
+
+### 3.2 Server-Speicherung (geräteübergreifend)
+
+Wenn Sie die Option **Server-Speicherung** wählen, werden Ihre anonymisierten Transaktionsdaten verschlüsselt auf unserem Server gespeichert. Der zur Entschlüsselung erforderliche Schlüssel wird lokal in Ihrer `IndexedDB` abgelegt (`keyval-store/encryptionKey`) und ist exportierbar. Ohne Zugriff auf Ihren Browser bleibt der Schlüssel Dritten unzugänglich.
+
+## 4. Weitergabe von Daten
+
+Es erfolgt **keine Weitergabe personenbezogener oder anonymisierter Daten an Dritte**.
+
+## 5. Eingebettete Inhalte
+
+Auf unserer Seite ist ein YouTube-Video eingebettet. YouTube (Google) kann hierbei – abhängig von Ihren Cookie-Einstellungen – einen Eintrag im `localStorage` Ihres Browsers vornehmen. Auf diese Verarbeitung haben wir keinen Einfluss. Weitere Informationen entnehmen Sie der Datenschutzerklärung von YouTube/Google.
+
+## 6. Ihre Rechte
+
+Ihnen stehen grundsätzlich folgende Rechte zu:
+
+- Auskunft (Art. 15 DSGVO)  
+- Berichtigung (Art. 16 DSGVO)  
+- Löschung (Art. 17 DSGVO)  
+- Einschränkung der Verarbeitung (Art. 18 DSGVO)  
+- Datenübertragbarkeit (Art. 20 DSGVO)  
+- Widerspruch gegen Verarbeitung (Art. 21 DSGVO)
+
+Wenn Sie glauben, dass die Verarbeitung Ihrer Daten gegen das Datenschutzrecht verstößt, können Sie sich bei der Aufsichtsbehörde beschweren. In Österreich ist dies die Datenschutzbehörde.
+
+## 7. Kontakt
+
+Bei Fragen zur Datenverarbeitung oder zur Geltendmachung Ihrer Rechte kontaktieren Sie uns bitte unter:
+
+**j.jhigatzberger@gmail.com**

@@ -108,7 +108,7 @@ export default function DataPage() {
             />
           </Grid>)}
 
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 12 }}>
             <Typography variant="h6" gutterBottom>
               Datensätze
             </Typography>
@@ -146,7 +146,7 @@ export default function DataPage() {
             </Grid>
           </Grid>
 
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 12 }}>
             <PersistenceModeSelect />
           </Grid>
         </Grid>

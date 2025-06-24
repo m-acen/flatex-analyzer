@@ -28,6 +28,11 @@ export function Footer() {
           Impressum
         </Typography>
       </Link>
+      <Link href="/data-protection" className="text-sm hover:underline">
+        <Typography variant="body2" color="text.secondary" align="center">
+          Datenschutzerklärung
+        </Typography>
+      </Link>
       <Link
         href="https://www.linkedin.com/in/jhigatzberger"
         className="text-sm hover:underline"

@@ -13,10 +13,11 @@ import {
   DialogActions,
   TextField,
   Snackbar,
-  Alert
+  Alert,
 } from "@mui/material";
 import { ContentCopy, Refresh, Edit } from "@mui/icons-material";
 import { useEncryptionKey } from "@/hooks/use-encryption-key";
+import InfoBox from "./info-box";
 
 export default function EncryptionKeyManager() {
   const { key, setKey, regenerateKey, error } = useEncryptionKey();
@@ -82,6 +83,7 @@ export default function EncryptionKeyManager() {
             </IconButton>
           </Tooltip>
         </Box>
+        <InfoBox text="Die Daten werden erst anonymisiert (Name, Iban, etc. werden gelöscht), dann verschlüsselt in der Datenbank gespeichert. Der Schlüssel wird lokal gespeichert. Wenn du die Daten von einem weiteren Gerät verwenden möchtest, kannst du den Schlüssel übertragen." />
       </CardContent>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
@@ -113,7 +115,11 @@ export default function EncryptionKeyManager() {
         onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: "100%" }}>
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
           Key copied to clipboard!
         </Alert>
       </Snackbar>
