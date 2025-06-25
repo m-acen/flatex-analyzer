@@ -9,6 +9,7 @@ import { useTickerDatas } from "./use-ticker-data";
 import { convertToEuroPrice } from "../utils/euro-price-conversion";
 import { Asset } from "../types/asset";
 import { DepotItem } from "../types/depot-item";
+import { ISO_FORMAT } from "../utils/date-parse";
 
 function getProgressState(
   conversionRatesIsLoading: boolean,
@@ -121,9 +122,9 @@ export function useAssetsCalc(depotItems: DepotItem[]) {
     return firstTxDate < earliest ? firstTxDate : earliest;
   }, new Date());
 
-  const todayString = dayjs().format("YYYY-MM-DD");
+  const todayString = dayjs().format(ISO_FORMAT);
   const firstInvestmentDateString =
-    dayjs(firstInvestmentDate).format("YYYY-MM-DD");
+    dayjs(firstInvestmentDate).format(ISO_FORMAT);
 
   const {
     data: conversionRates,

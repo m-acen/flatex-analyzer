@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { ParsedAccountTransaction } from "../types/account-transaction";
 import { Asset } from "../types/asset";
+import { ISO_FORMAT } from "../utils/date-parse";
 
 export function getInitialInvestment(
   accountTransactions: ParsedAccountTransaction[]
@@ -153,7 +154,7 @@ export function getAccumulatedCashFlows(
   const transactionsByDate = new Map<string, ParsedAccountTransaction[]>();
   for (const tx of accountTransactions) {
     if (tx["IBAN / Kontonummer"]) {
-      const dateKey = dayjs(tx.Valuta).format("YYYY-MM-DD");
+      const dateKey = dayjs(tx.Valuta).format(ISO_FORMAT);
       if (!transactionsByDate.has(dateKey)) {
         transactionsByDate.set(dateKey, []);
       }
@@ -166,7 +167,7 @@ export function getAccumulatedCashFlows(
   const end = dayjs(endDate);
 
   for (let date = start; !date.isAfter(end); date = date.add(1, "day")) {
-    const dateKey = date.format("YYYY-MM-DD");
+    const dateKey = date.format(ISO_FORMAT);
     const transactions = transactionsByDate.get(dateKey) || [];
 
     for (const tx of transactions) {
@@ -198,7 +199,7 @@ export function getAccumulatedDepotValue(
   for (const asset of assets) {
     const priceMap = new Map<string, number>();
     for (const entry of asset.priceHistory || []) {
-      priceMap.set(dayjs(entry.date).format("YYYY-MM-DD"), entry.price);
+      priceMap.set(dayjs(entry.date).format(ISO_FORMAT), entry.price);
     }
     assetPriceMaps.set(asset, priceMap);
 
@@ -213,7 +214,7 @@ export function getAccumulatedDepotValue(
       !date.isAfter(end);
       date = date.add(1, "day")
     ) {
-      const currentDay = date.format("YYYY-MM-DD");
+      const currentDay = date.format(ISO_FORMAT);
       for (const tx of sortedTx) {
         if (dayjs(tx.Valuta).isSame(date, "day")) {
           cumulative += tx.Nominal;
@@ -242,7 +243,7 @@ export function getAccumulatedDepotValue(
     !date.isAfter(end);
     date = date.add(1, "day")
   ) {
-    const dateKey = date.format("YYYY-MM-DD");
+    const dateKey = date.format(ISO_FORMAT);
     let dailyValue = 0;
 
     for (const asset of assets) {
@@ -301,12 +302,12 @@ export function getAccumulatedCashPosition(
     !date.isAfter(end);
     date = date.add(1, "day")
   ) {
-    const currentDayStr = date.format("YYYY-MM-DD");
+    const currentDayStr = date.format(ISO_FORMAT);
 
     // Process all transactions for the current day
     while (
       txIndex < sortedTransactions.length &&
-      dayjs(sortedTransactions[txIndex].Valuta).format("YYYY-MM-DD") ===
+      dayjs(sortedTransactions[txIndex].Valuta).format(ISO_FORMAT) ===
         currentDayStr
     ) {
       totalCash += sortedTransactions[txIndex].Betrag;

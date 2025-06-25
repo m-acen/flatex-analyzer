@@ -3,6 +3,8 @@
 import { LineChart } from "@mui/x-charts/LineChart";
 import { Typography, Box } from "@mui/material";
 import { blue, orange, yellow } from "@mui/material/colors";
+import dayjs from "dayjs";
+import { ISO_FORMAT } from "../utils/date-parse";
 
 type PricePoint = {
   date: string;
@@ -35,13 +37,15 @@ export default function PriceHistoryChart({
     return <Typography>No price history available</Typography>;
   }
 
+  console.log(keyEvents, "keyEvents");
+
   const dates = priceHistory.map((p) => new Date(p.date));
   const prices = priceHistory.map((p) => (p.price === 0 ? null : p.price));
 
   const uniqueEventTypes = Array.from(new Set(keyEvents.map((e) => e.type)));
 
   const dateIndexMap = new Map(
-    dates.map((d, i) => [d.toISOString().split("T")[0], i])
+    dates.map((d, i) => [dayjs(d).format(ISO_FORMAT), i])
   );
 
   const eventSeries = uniqueEventTypes.map((type) => {
@@ -50,13 +54,13 @@ export default function PriceHistoryChart({
     keyEvents
       .filter((e) => e.type === type)
       .forEach((e) => {
-        const isoDate = e.date.toISOString().split("T")[0];
+        const isoDate = dayjs(e.date).format(ISO_FORMAT);
         const index = dateIndexMap.get(isoDate);
         if (index !== undefined) {
           data[index] = e.price ? e.price : prices[index];
         } else {
           // TODO: handle missing dates
-          console.warn(`Date ${isoDate} not found in price history.`);
+          console.warn(`Date ${isoDate} not found in price history.`, e);
         }
       });
 

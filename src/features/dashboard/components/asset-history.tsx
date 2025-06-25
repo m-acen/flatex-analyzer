@@ -19,6 +19,7 @@ import {
 import PriceHistoryChart from "./price-history-chart";
 import dayjs from "dayjs";
 import { Asset } from "../types/asset";
+import { LOCAL_FORMAT } from "../utils/date-parse";
 
 type RowType = {
   type: "buy" | "sell" | "dividend";
@@ -31,7 +32,7 @@ type RowType = {
 function AssetHistoryItem({ item }: { item: Asset }) {
   const buys: RowType[] = item.details.investment.transactions.map((tx) => ({
     type: "buy",
-    date: new Date(tx.date),
+    date: tx.date,
     rate: tx.rate,
     quantity: tx.quantity,
     value: tx.rate * tx.quantity,
@@ -39,7 +40,7 @@ function AssetHistoryItem({ item }: { item: Asset }) {
 
   const sells: RowType[] = item.details.realized.transactions.map((tx) => ({
     type: "sell",
-    date: new Date(tx.date),
+    date: tx.date,
     rate: tx.rate,
     quantity: tx.quantity,
     value: tx.rate * tx.quantity,
@@ -47,7 +48,7 @@ function AssetHistoryItem({ item }: { item: Asset }) {
 
   const dividends: RowType[] = item.details.dividends.dividends.map((div) => ({
     type: "dividend",
-    date: new Date(div.date),
+    date: div.date,
     value: div.value,
   }));
 
@@ -148,7 +149,7 @@ function AssetHistoryItem({ item }: { item: Asset }) {
                     </Typography>
                   </Box>
                 </TableCell>
-                <TableCell>{dayjs(row.date).format("DD.MM.YYYY")}</TableCell>
+                <TableCell>{dayjs(row.date).format(LOCAL_FORMAT)}</TableCell>
                 <TableCell align="right">
                   {row.rate !== undefined ? row.rate.toFixed(2) : "-"}
                 </TableCell>
