@@ -3,6 +3,7 @@
 import { Box, Button } from "@mui/material";
 import { useDepot } from "@/features/dashboard/hooks/use-depot";
 import Link from "next/link";
+import FilePresentIcon from '@mui/icons-material/FilePresent';
 
 export default function DashboardLayout({
   children,
@@ -19,7 +20,7 @@ export default function DashboardLayout({
         sx={{ padding: 2, textAlign: "center" }}
       >
         <h2>Keine Daten </h2>
-        <Button variant="outlined" href="/data" LinkComponent={Link}>
+        <Button endIcon={<FilePresentIcon/>} variant="outlined" href="/data" LinkComponent={Link}>
           Daten importieren
         </Button>
         <span>oder</span>
