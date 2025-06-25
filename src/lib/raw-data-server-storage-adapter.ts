@@ -30,7 +30,6 @@ export function generateKeyBase64(): string {
 }
 
 async function encryptData<T>(data: T, base64Key: string): Promise<string> {
-  console.log("Encrypting data with key:", base64Key);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const keyBuffer = base64ToUint8Array(base64Key);
 

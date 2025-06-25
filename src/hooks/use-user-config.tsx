@@ -97,7 +97,6 @@ export const UserConfigProvider: React.FC<{ children: React.ReactNode }> = ({
     },
     // After a successful mutation, update the query data.
     onSuccess: (updatedConfig) => {
-      console.log("User config updated:", updatedConfig);
       queryClient.setQueryData(queryKey, updatedConfig);
     },
   });
