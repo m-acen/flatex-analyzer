@@ -55,7 +55,7 @@ function getDepotItemDetails(item: DepotItem): {
       investment.totalValue += tx.Kurs * tx.Nominal;
       investment.totalQuantity += tx.Nominal;
       investment.transactions.push({
-        date: tx.Buchtag,
+        date: tx.Valuta,
         quantity: tx.Nominal,
         rate: tx.Kurs,
       });
@@ -66,7 +66,7 @@ function getDepotItemDetails(item: DepotItem): {
       realized.totalValue += tx.Kurs * quantity;
       realized.totalQuantity += quantity;
       realized.transactions.push({
-        date: tx.Buchtag,
+        date: tx.Valuta,
         quantity,
         rate: tx.Kurs,
       });
@@ -79,7 +79,7 @@ function getDepotItemDetails(item: DepotItem): {
     if (accTx.Buchungsinformationen.includes("Dividendenzahlung")) {
       const dividendValue = accTx.Betrag;
       dividends.dividends.push({
-        date: accTx.Buchtag,
+        date: accTx.Valuta,
         value: dividendValue,
       });
       dividends.totalValue += dividendValue;

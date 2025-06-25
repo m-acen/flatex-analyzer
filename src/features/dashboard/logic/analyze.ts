@@ -112,7 +112,7 @@ export function calculateXIRR(
     let cashFlows: CashFlow[] = accountTransactions
       .filter((tx) => tx["IBAN / Kontonummer"])
       .map((tx) => ({
-        date: new Date(tx.Buchtag),
+        date: new Date(tx.Valuta),
         value: tx.Betrag * -1,
       }))
       .sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -153,7 +153,7 @@ export function getAccumulatedCashFlows(
   const transactionsByDate = new Map<string, ParsedAccountTransaction[]>();
   for (const tx of accountTransactions) {
     if (tx["IBAN / Kontonummer"]) {
-      const dateKey = dayjs(tx.Buchtag).format("YYYY-MM-DD");
+      const dateKey = dayjs(tx.Valuta).format("YYYY-MM-DD");
       if (!transactionsByDate.has(dateKey)) {
         transactionsByDate.set(dateKey, []);
       }
@@ -205,7 +205,7 @@ export function getAccumulatedDepotValue(
     const quantityMap = new Map<string, number>();
     let cumulative = 0;
     const sortedTx = [...(asset.depotTransactions || [])].sort(
-      (a, b) => new Date(a.Buchtag).getTime() - new Date(b.Buchtag).getTime()
+      (a, b) => new Date(a.Valuta).getTime() - new Date(b.Valuta).getTime()
     );
 
     for (
@@ -215,7 +215,7 @@ export function getAccumulatedDepotValue(
     ) {
       const currentDay = date.format("YYYY-MM-DD");
       for (const tx of sortedTx) {
-        if (dayjs(tx.Buchtag).isSame(date, "day")) {
+        if (dayjs(tx.Valuta).isSame(date, "day")) {
           cumulative += tx.Nominal;
         }
       }
@@ -290,7 +290,7 @@ export function getAccumulatedCashPosition(
 
   // Sort transactions for correct chronological processing
   const sortedTransactions = [...accountTransactions].sort(
-    (a, b) => new Date(a.Buchtag).getTime() - new Date(b.Buchtag).getTime()
+    (a, b) => new Date(a.Valuta).getTime() - new Date(b.Valuta).getTime()
   );
 
   let totalCash = 0;
@@ -306,7 +306,7 @@ export function getAccumulatedCashPosition(
     // Process all transactions for the current day
     while (
       txIndex < sortedTransactions.length &&
-      dayjs(sortedTransactions[txIndex].Buchtag).format("YYYY-MM-DD") ===
+      dayjs(sortedTransactions[txIndex].Valuta).format("YYYY-MM-DD") ===
         currentDayStr
     ) {
       totalCash += sortedTransactions[txIndex].Betrag;
