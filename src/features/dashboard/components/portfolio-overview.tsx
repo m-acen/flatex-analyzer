@@ -205,14 +205,6 @@ export function PortfolioOverview({
           </Paper>
         </Grid>
       </Grid>
-
-      <Grid container spacing={2}>
-        {sortedItems.map((item) => (
-          <Grid key={item.isin} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-            <DepotItemCard item={item} />
-          </Grid>
-        ))}
-      </Grid>
     </Box>
   );
 }
