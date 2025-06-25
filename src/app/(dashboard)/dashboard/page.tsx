@@ -9,10 +9,14 @@ export default function DashboardPage() {
   const { assets, accountTransactions, progress } = useDepot();
   if (assets.length === 0) {
     return (
-      <Box sx={{ padding: 2 }}>
+      <Box display={"flex"} flexDirection={"column"} gap={2} sx={{ padding: 2, textAlign: "center" }}>
         <h2>Keine Daten </h2>
-        <Button href="/data" LinkComponent={Link}>
+        <Button variant="outlined" href="/data" LinkComponent={Link}>
           Daten importieren
+        </Button>
+        <span>oder</span>
+        <Button href="/demo" LinkComponent={Link}>
+          Demo ausprobieren
         </Button>
       </Box>
     );

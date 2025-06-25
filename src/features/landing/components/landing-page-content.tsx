@@ -59,7 +59,7 @@ export default function LandingPageContent() {
               </Stack>
             </Stack>
           </Grid>
-          <Grid size={{ lg: 5, xs: 12 }}>
+          <Grid position={"relative"} size={{ lg: 5, xs: 12 }}>
             <Image
               src={`/dashboard-screenshot_${theme.palette.mode}.webp`}
               width={2746}
@@ -70,6 +70,20 @@ export default function LandingPageContent() {
               className="lg:scale-125 lg:mt-6 border blur-gradient-bottom drop rounded-lg overflow-hidden rotate-z-12 rotate-x-[-25deg] rotate-y-[28deg]"
               alt="Screenshot des Dashboards"
             />
+            <Button
+              color="secondary"
+              sx={{
+                position: "absolute",
+                bottom: 20,
+                right: 20,
+                zIndex: 10,
+                display: "flex"
+              }}
+              href="/demo"
+              LinkComponent={Link}
+            >
+              zur Demo
+            </Button>
           </Grid>
         </Grid>
         <InfoBox text="Die Flatex Umsatzhistorie beginnt ab 2020. Solltest du ein älteres Depot haben, kannst du die vollständige Historie vom Support unter info@flatex.at anfragen. Du kannst auch die unvollständige Historie hineinladen, es kann dann aber zu falschen Auswertungen führen." />

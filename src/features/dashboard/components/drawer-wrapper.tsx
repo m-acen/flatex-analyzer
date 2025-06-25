@@ -29,11 +29,6 @@ import { RepoButton } from "@/components/repo-button";
 
 const drawerWidth = 240;
 
-const navItems = [
-  { text: "Dashboard", icon: <PieChart />, href: "/dashboard" },
-  { text: "Daten", icon: <Folder />, href: "/data" },
-];
-
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
   transition: theme.transitions.create("width", {
@@ -118,8 +113,10 @@ const Drawer = styled(MuiDrawer, {
 
 export default function MiniDrawer({
   children,
+  navItems
 }: {
   children: React.ReactNode;
+  navItems?: { text: string; icon: React.ReactNode; href: string }[];
 }) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);

@@ -76,20 +76,15 @@ type DepotContextType = {
 
 const DepotContext = createContext<DepotContextType | null>(null);
 
-export function DepotProvider({ children }: { children: React.ReactNode }) {
-  const { parsedAccountTransactions: accountTransactions, parsedDepotTransactions: depotTransactions } = useRawData();
-  /*const {
-    accountTransactions: fakeAccountTransactions,
-    depotTransactions: fakeDepotTransactions,
-  } = generateTransactionsFromFakeDepotData();
-  const depotTransactions =
-    parsedDepotTransactions.length > 0
-      ? parsedDepotTransactions
-      : fakeDepotTransactions;
-  const accountTransactions =
-    parsedAccountTransactions.length > 0
-      ? parsedAccountTransactions
-      : fakeAccountTransactions;*/
+export function DepotProvider({
+  children,
+  depotTransactions,
+  accountTransactions,
+}: {
+  children: React.ReactNode;
+  depotTransactions: ParsedDepotTransaction[];
+  accountTransactions: ParsedAccountTransaction[];
+}) {
   const depotItems = getDepotItems(depotTransactions, accountTransactions);
   const { assets, progress } = useAssetsCalc(depotItems);
 
