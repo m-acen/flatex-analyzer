@@ -26,6 +26,7 @@ import { usePathname } from "next/navigation";
 import { ColorModeToggle } from "@/components/color-mode-toggle";
 import AnalyticsIcon from "@mui/icons-material/Analytics";
 import { RepoButton } from "@/components/repo-button";
+import { useMediaQuery } from "@mui/material";
 
 const drawerWidth = 240;
 
@@ -113,127 +114,127 @@ const Drawer = styled(MuiDrawer, {
 
 export default function MiniDrawer({
   children,
-  navItems
+  navItems = [],
 }: {
   children: React.ReactNode;
   navItems?: { text: string; icon: React.ReactNode; href: string }[];
 }) {
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
+  const mobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [open, setOpen] = React.useState(false);
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
+  const handleDrawerOpen = () => setOpen(true);
+  const handleDrawerClose = () => setOpen(false);
 
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
+  const drawerContent = (
+    <Box
+      sx={{
+        width: mobile ? 240 : drawerWidth,
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+      }}
+    >
+      <DrawerHeader>
+        <IconButton onClick={handleDrawerClose}>
+          {theme.direction === "rtl" ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+        </IconButton>
+      </DrawerHeader>
+      <Divider />
+      <List disablePadding sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        {navItems.map((item) => (
+          <ListItem key={item.text} disablePadding sx={{ display: "block" }}>
+            <ListItemButton
+              component={Link}
+              href={item.href}
+              selected={item.href === pathname}
+              onClick={mobile ? handleDrawerClose : undefined}
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  justifyContent: "center",
+                  mr: open ? 3 : "auto",
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+
+        {/* Push auth switch to bottom */}
+        <Box sx={{ flexGrow: 1 }} />
+
+        <Divider />
+        <ListItem disablePadding sx={{ display: "block" }}>
+          <MobileAuthSwitch variant={open ? "text" : "icon"} />
+        </ListItem>
+      </List>
+    </Box>
+  );
 
   return (
     <Box sx={{ display: "flex", minHeight: "100svh" }}>
-      <AppBar variant="outlined" color="default" position="fixed" open={open}>
+      <CssBaseline />
+      <AppBar
+        variant="outlined"
+        color="default"
+        position="fixed"
+        open={!mobile && open}
+        sx={{
+          zIndex: theme.zIndex.drawer + 1,
+        }}
+      >
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            aria-label={open ? "close drawer" : "open drawer"}
+            onClick={open ? handleDrawerClose : handleDrawerOpen}
             edge="start"
-            sx={[
-              {
-                marginRight: 5,
-              },
-              open && { display: "none" },
-            ]}
+            sx={{ ...(open && !mobile ? { display: "none" } : {}) }}
           >
-            <MenuIcon />
+            {open && mobile ? <ChevronLeftIcon /> : <MenuIcon />}
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {!mobile && <Typography variant="h6" noWrap component="div" sx={{ display: "flex", alignItems: "center", gap: 1, ml: 4 }}>
             <AnalyticsIcon fontSize="large" color="primary" />
             Flatex Dashboard
-          </Typography>
+          </Typography>}
           <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center", justifyContent: "flex-end" }}>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <ColorModeToggle />
             <RepoButton />
           </Box>
         </Toolbar>
       </AppBar>
-      <Drawer variant="permanent" open={open}>
-        <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "rtl" ? (
-              <ChevronRightIcon />
-            ) : (
-              <ChevronLeftIcon />
-            )}
-          </IconButton>
-        </DrawerHeader>
-        <Divider />
-        <List disablePadding sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-          {navItems.map((item, index) => (
-            <ListItem key={item.text} disablePadding sx={{ display: "block" }}>
-              <ListItemButton
-                component={Link}
-                href={item.href}
-                selected={item.href === pathname}
-                sx={[
-                  {
-                    minHeight: 48,
-                    px: 2.5,
-                  },
-                  open
-                    ? {
-                      justifyContent: "initial",
-                    }
-                    : {
-                      justifyContent: "center",
-                    },
-                ]}
-              >
-                <ListItemIcon
-                  sx={[
-                    {
-                      minWidth: 0,
-                      justifyContent: "center",
-                    },
-                    open
-                      ? {
-                        mr: 3,
-                      }
-                      : {
-                        mr: "auto",
-                      },
-                  ]}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={[
-                    open
-                      ? {
-                        opacity: 1,
-                      }
-                      : {
-                        opacity: 0,
-                      },
-                  ]}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-          <Box sx={{ flexGrow: 1 }} />
-          <Divider />
-          <ListItem disablePadding sx={{ display: "block" }}>
-            <MobileAuthSwitch variant={open ? "text" : "icon"} />
-          </ListItem>
-        </List>
-      </Drawer>
+
+      {mobile ? (
+        <MuiDrawer
+          variant="temporary"
+          anchor={theme.direction === "rtl" ? "right" : "left"}
+          open={open}
+          onClose={handleDrawerClose}
+          ModalProps={{ keepMounted: true }}
+        >
+          {drawerContent}
+        </MuiDrawer>
+      ) : (
+        <Drawer variant="permanent" open={open}>
+          {drawerContent}
+        </Drawer>
+      )}
+
       <Box
         component="main"
-        display={"flex"}
-        flexDirection={"column"}
+        display="flex"
+        flexDirection="column"
         sx={{ flexGrow: 1 }}
       >
         <DrawerHeader />
