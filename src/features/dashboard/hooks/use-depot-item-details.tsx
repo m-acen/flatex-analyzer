@@ -72,6 +72,25 @@ function getDepotItemDetails(item: DepotItem): {
       });
     }
 
+    // compare > 0 to only count split once: there are 2 transactions for a split (one being added to depot and one being removed)
+    if (tx.Buchungsinformationen.includes("Split") && tx.Nominal > 0) {
+      const splitRatio = tx.Buchungsinformationen.match(/(\d+):(\d+)/);
+      console.log(`Split Ratio: ${splitRatio}`);
+      if (splitRatio) {
+        const ogQuantity = parseInt(splitRatio[1], 10);
+        const newQuantity = parseInt(splitRatio[2], 10);
+        const splitFactor = newQuantity / ogQuantity;
+        investment.transactions.forEach((transaction) => {
+          transaction.quantity *= splitFactor;
+          transaction.rate /= splitFactor;
+        });
+        realized.transactions.forEach((transaction) => {
+          transaction.quantity *= splitFactor;
+          transaction.rate /= splitFactor;
+        });
+      }
+    }
+
     quantity += tx.Nominal;
   });
 
