@@ -4,29 +4,25 @@ import {
   Typography,
   Grid,
   Box,
-  LinearProgress,
   CardContent,
   Card,
   Paper,
+  Chip,
+  useTheme,
 } from "@mui/material";
 import React from "react";
-import { DepotItemCard } from "./depot-item-card";
 import {
   getInitialInvestment,
   getCashPosition,
   getDepotSum,
   calculateXIRR,
-  getAccumulatedCashFlows,
-  getAccumulatedDepotValue,
-  getAccumulatedCashPosition,
 } from "../logic/analyze";
 import { DepotChart } from "./depot-chart";
 import { PieChartSwitcher } from "./pie-chart-switcher";
-import { LineChart } from "@mui/x-charts";
-import { useShowValues } from "../hooks/use-show-values";
 import { ProgressState } from "../hooks/use-assets-calc";
 import { ParsedAccountTransaction } from "../types/account-transaction";
 import { Asset } from "../types/asset";
+import PerformanceChart from "./performance-chart";
 
 export function PortfolioOverview({
   accountTransactions,
@@ -42,12 +38,10 @@ export function PortfolioOverview({
     const valueB = b.currentPositionValue || 0;
     return valueB - valueA;
   });
-  const { showValues } = useShowValues();
   const initialInvestment = getInitialInvestment(accountTransactions);
   const cashPosition = getCashPosition(accountTransactions);
   const depotSum = getDepotSum(sortedItems);
   const totalValue = cashPosition + depotSum;
-  const firstTransactionDate = accountTransactions[0]?.Buchtag;
 
   const xirr = calculateXIRR(accountTransactions, sortedItems);
 
@@ -67,144 +61,100 @@ export function PortfolioOverview({
     },
   ];
 
-  const cashFlows = getAccumulatedCashFlows(
-    firstTransactionDate,
-    new Date(),
-    accountTransactions
-  );
-
-  const accumulatedDepotValue =
-    progress === ProgressState.COMPLETED
-      ? getAccumulatedDepotValue(sortedItems, firstTransactionDate, new Date())
-      : [];
-
-  const accumulatedCashPosition = getAccumulatedCashPosition(
-    firstTransactionDate,
-    new Date(),
-    accountTransactions
-  );
-
-  const accumulatedNetworth =
-    progress === ProgressState.COMPLETED
-      ? accumulatedDepotValue.map((d, index) => ({
-          date: d.date,
-          value: d.value + accumulatedCashPosition[index].value,
-        }))
-      : [];
-
   return (
     <Box sx={{ p: 2 }} width={"100%"}>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 12, md: 8, lg: 6 }}>
-          <Paper sx={{ p: 2, mb: 2, height: "calc(100% - 16px)" }}>
-            <LineChart
-              yAxis={[
-                {
-                  valueFormatter: (value) => (showValues ? value : ""),
-                },
-              ]}
-              sx={{
-                height: "100%",
-              }}
-              xAxis={[
-                {
-                  data: cashFlows.map((d) => d.date),
-                  scaleType: "time",
-                  label: "Date",
-                },
-              ]}
-              series={[
-                {
-                  data: cashFlows.map((d) => d.value),
-                  label: "Invested (€)",
-                  showMark: false,
-                },
-                {
-                  data: accumulatedNetworth.map((d) => d.value),
-                  label: "Total Value (€)",
-                  showMark: false,
-                  connectNulls: true,
-                  stack: "accumulatedDepotValue",
-                },
-              ]}
+          <Box sx={{
+            aspectRatio: {
+              xs: 'unset',
+              lg: '16/9',
+            },
+          }}>
+            <Paper sx={{ p: {lg: 4, xs: 2}, height: "100%" }}>
+            <PerformanceChart
+              accountTransactions={accountTransactions}
+              sortedItems={sortedItems}
+              progress={progress}
             />
           </Paper>
-        </Grid>
-        <Grid
-          container
-          spacing={2}
-          sx={{ mb: 2 }}
-          size={{ xs: 12, md: 4, lg: 1.5 }}
-        >
-          {kpis.map((kpi) => (
-            <Grid size={{ xs: 6, sm: 6, md: 12 }} key={kpi.label}>
-              <Card sx={{ height: "100%" }}>
-                <CardContent
-                  sx={{
-                    alignItems: "center",
-                    justifyContent: "center",
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "100%",
-                  }}
-                >
-                  <Typography variant="subtitle2" color="text.secondary">
-                    {kpi.label}
-                  </Typography>
-                  <Typography variant="h5" fontWeight="bold">
-                    {kpi.value}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 2.25 }}>
-          <Paper sx={{ p: 2, mb: 2 }}>
-            <DepotChart depotItems={sortedItems} />
-          </Paper>
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 2.25 }}>
-          <Paper sx={{ p: 2, mb: 2 }}>
-            <PieChartSwitcher
-              dataSets={[
-                {
-                  key: "profit",
-                  label: "Profit",
-                  data: [
-                    {
-                      label: "Profit",
-                      value: profit,
-                      id: "profit",
-                    },
-                    {
-                      label: "Initial Investment",
-                      value: initialInvestment,
-                      id: "initialInvestment",
-                    },
-                  ],
-                },
-                {
-                  key: "depot",
-                  label: "Cash Position",
-                  data: [
-                    {
-                      label: "Cash Position",
-                      value: cashPosition,
-                      id: "cashPosition",
-                    },
-                    {
-                      label: "Depot Value",
-                      value: depotSum,
-                      id: "depotValue",
-                    },
-                  ],
-                },
-              ]}
-            />
-          </Paper>
-        </Grid>
+        </Box>
       </Grid>
-    </Box>
+      <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+        <Paper sx={{ p: 2, height: "100%" }}>
+          <DepotChart depotItems={sortedItems} />
+        </Paper>
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+        <Paper sx={{ p: 2, height: "100%" }}>
+          <PieChartSwitcher
+            dataSets={[
+              {
+                key: "profit",
+                label: "Profit",
+                data: [
+                  {
+                    label: "Profit",
+                    value: profit,
+                    id: "profit",
+                  },
+                  {
+                    label: "Initial Investment",
+                    value: initialInvestment,
+                    id: "initialInvestment",
+                  },
+                ],
+              },
+              {
+                key: "depot",
+                label: "Cash Position",
+                data: [
+                  {
+                    label: "Cash Position",
+                    value: cashPosition,
+                    id: "cashPosition",
+                  },
+                  {
+                    label: "Depot Value",
+                    value: depotSum,
+                    id: "depotValue",
+                  },
+                ],
+              },
+            ]}
+          />
+        </Paper>
+      </Grid>
+      <Grid
+        container
+        spacing={2}
+        sx={{ mb: 2 }}
+        size={{ xs: 12 }}
+      >
+        {kpis.map((kpi) => (
+          <Grid size={{ xs: 6, sm: 6, md: 6 }} key={kpi.label}>
+            <Card sx={{ height: "100%" }}>
+              <CardContent
+                sx={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                }}
+              >
+                <Typography variant="subtitle2" color="text.secondary">
+                  {kpi.label}
+                </Typography>
+                <Typography variant="h5" fontWeight="bold">
+                  {kpi.value}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Grid>
+    </Box >
   );
 }
