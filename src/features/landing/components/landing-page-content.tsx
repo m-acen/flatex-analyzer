@@ -77,7 +77,7 @@ export default function LandingPageContent() {
                 bottom: 20,
                 right: 20,
                 zIndex: 10,
-                display: "flex"
+                display: "flex",
               }}
               href="/demo"
               LinkComponent={Link}
@@ -86,7 +86,7 @@ export default function LandingPageContent() {
             </Button>
           </Grid>
         </Grid>
-        <InfoBox text="Die Flatex Umsatzhistorie beginnt ab 2020. Solltest du ein älteres Depot haben, kannst du die vollständige Historie vom Support unter info@flatex.at anfragen. Du kannst auch die unvollständige Historie hineinladen, es kann dann aber zu falschen Auswertungen führen." />
+        <InfoBox text="Dieses Projekt ist nicht offiziell von FlatexDEGIRO. Es soll zur Verbesserung der Nutzererfahrung von Flatex Kunden helfen. Falls das ein Problem darstellt, bitte ich um Kontaktaufnahme." />
         <FAQ />
       </Container>
     </Box>

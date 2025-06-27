@@ -77,7 +77,27 @@ export default function FAQ() {
           </Box>
         </AccordionDetails>
       </Accordion>
-
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography fontWeight="medium">
+            Vor 2020 habe ich keine Daten.
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <List>
+             Die Flatex Umsatzhistorie beginnt ab 2020. Solltest du ein älteres Depot haben, kannst du die vollständige Historie vom Support unter info@flatex.at anfragen. Du kannst auch die unvollständige Historie hineinladen, es kann dann aber zu falschen Auswertungen führen.
+          </List>
+          <Box sx={{ aspectRatio: "16 / 9", width: "100%", mt: 2 }}>
+            <ReactPlayer
+              width="100%"
+              height="100%"
+              url="https://www.youtube.com/watch?v=AlZtmcSHVLA"
+              controls
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+     
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography fontWeight="medium">
