@@ -86,7 +86,7 @@ export default function LandingPageContent() {
             </Button>
           </Grid>
         </Grid>
-        <InfoBox text="Dieses Projekt ist nicht offiziell von FlatexDEGIRO. Es soll zur Verbesserung der Nutzererfahrung von Flatex Kunden helfen. Falls das ein Problem darstellt, bitte ich um Kontaktaufnahme." />
+        <InfoBox text="Dieses Projekt ist nicht offiziell von FlatexDEGIRO. Es ist ein nicht-kommerzielles Community Projekt, das zur Verbesserung der Nutzererfahrung von Flatex Kunden helfen soll. Falls das ein Problem darstellt, bitte ich um Kontaktaufnahme." />
         <FAQ />
       </Container>
     </Box>
