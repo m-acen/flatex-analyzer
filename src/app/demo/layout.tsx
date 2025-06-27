@@ -6,9 +6,8 @@ import MiniDrawer from "@/features/dashboard/components/drawer-wrapper";
 import { DepotProvider } from "@/features/dashboard/hooks/use-depot";
 import { ShowValuesProvider } from "@/features/dashboard/hooks/use-show-values";
 import { generateTransactionsFromFakeDepotData } from "@/features/dashboard/utils/demo-data";
-import { ArrowBack, PieChart } from "@mui/icons-material";
+import { ArrowBack, Inventory, PieChart } from "@mui/icons-material";
 import { Box } from "@mui/material";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 
 export default function DemoLayout({
   children,
@@ -21,7 +20,8 @@ export default function DemoLayout({
       icon: <ArrowBack />,
       href: "/",
     },
-    { text: "Demo Dashboard", icon: <AutoAwesomeIcon />, href: "/demo" },
+    { text: "Demo Dashboard", icon: <PieChart />, href: "/demo/dashboard" },
+    { text: "Demo Assets", icon: <Inventory />, href: "/demo/assets" },
   ];
   const { accountTransactions, depotTransactions } =
     generateTransactionsFromFakeDepotData();

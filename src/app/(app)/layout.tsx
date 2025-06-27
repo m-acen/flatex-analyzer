@@ -8,10 +8,13 @@ import { RawDataProvider } from "@/features/dashboard/hooks/use-raw-transaction-
 import { ShowValuesProvider } from "@/features/dashboard/hooks/use-show-values";
 import { Folder, PieChart } from "@mui/icons-material";
 import { Box } from "@mui/material";
+import InventoryIcon from '@mui/icons-material/Inventory';
+import FilePresentIcon from '@mui/icons-material/FilePresent';
 
   const navItems = [
     { text: "Dashboard", icon: <PieChart />, href: "/dashboard" },
-    { text: "Daten", icon: <Folder />, href: "/data" },
+    { text: "Assets", icon: <InventoryIcon />, href: "/assets" },
+    { text: "Daten", icon: <FilePresentIcon />, href: "/data" },
   ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
