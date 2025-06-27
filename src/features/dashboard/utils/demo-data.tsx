@@ -45,7 +45,7 @@ export function generateTransactionsFromFakeDepotData(): {
       Valuta: dayjs(item.date).subtract(5, "day").toDate(),
       "BIC / BLZ": "external-bic",
       Buchungsinformationen: "investment",
-      Betrag: Math.round((item.quantity * item.rate) / 1000) * 1000,
+      Betrag: Math.ceil((item.quantity * item.rate) / 1000) * 1000 + 1000,
       "": "",
       Auftraggeberkonto: "external-account",
       Konto: "external-account",
