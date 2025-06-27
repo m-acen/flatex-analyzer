@@ -11,7 +11,7 @@ import { useState } from "react";
 
 enum SeriesIds {
     CASH_FLOWS = "cashFlows",
-    NETWORTH = "networth",
+    NET_WORTH = "netWorth",
     CASH_POSITION = "cashPosition",
     DEPOT_VALUE = "depotValue",
 }
@@ -47,7 +47,7 @@ export default function PerformanceChart({
         accountTransactions
     );
 
-    const accumulatedNetworth =
+    const accumulatedNetWorth =
         progress === ProgressState.COMPLETED
             ? accumulatedDepotValue.map((d, index) => ({
                 date: d.date,
@@ -64,9 +64,9 @@ export default function PerformanceChart({
             color: theme.palette.secondary.main,
         },
         {
-            id: SeriesIds.NETWORTH,
-            data: accumulatedNetworth.map((d) => d.value),
-            label: "Networth",
+            id: SeriesIds.NET_WORTH,
+            data: accumulatedNetWorth.map((d) => d.value),
+            label: "Net Worth",
             showMark: false,
             connectNulls: true,
             color: theme.palette.primary.main,
@@ -101,7 +101,7 @@ export default function PerformanceChart({
     return <>
         <Box flexWrap={"wrap"} display="flex" flexDirection="row" gap={1} mb={2} alignItems="center">
             <Chip size="small" variant={activeSeries.find(s => s == SeriesIds.CASH_FLOWS) ? "filled" : "outlined"} color="secondary" label="Investments" onClick={() => handleSeriesClick(SeriesIds.CASH_FLOWS)} />
-            <Chip size="small" variant={activeSeries.find(s => s == SeriesIds.NETWORTH) ? "filled" : "outlined"} color="primary" label="Networth" onClick={() => handleSeriesClick(SeriesIds.NETWORTH)} />
+            <Chip size="small" variant={activeSeries.find(s => s == SeriesIds.NET_WORTH) ? "filled" : "outlined"} color="primary" label="Net Worth" onClick={() => handleSeriesClick(SeriesIds.NET_WORTH)} />
             <Chip size="small" variant={activeSeries.find(s => s == SeriesIds.CASH_POSITION) ? "filled" : "outlined"} sx={{ color: theme.palette.grey[500] }} label="Cash Position" onClick={() => handleSeriesClick(SeriesIds.CASH_POSITION)} />
             <Chip size="small" variant={activeSeries.find(s => s == SeriesIds.DEPOT_VALUE) ? "filled" : "outlined"} color="success" label="Depot Value" onClick={() => handleSeriesClick(SeriesIds.DEPOT_VALUE)} />
         </Box>
