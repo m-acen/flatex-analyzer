@@ -1,3 +1,5 @@
+Disclaimer: This is not official or endorsed by FlatexDEGIRO. It is a non-commercial hobby project.
+
 # Flatex Dashboard
 
 This is an open source tool for analyzing your Flatex portfolio history.
