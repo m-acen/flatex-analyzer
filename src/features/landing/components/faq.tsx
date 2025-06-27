@@ -84,20 +84,15 @@ export default function FAQ() {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <List>
-             Die Flatex Umsatzhistorie beginnt ab 2020. Solltest du ein älteres Depot haben, kannst du die vollständige Historie vom Support unter info@flatex.at anfragen. Du kannst auch die unvollständige Historie hineinladen, es kann dann aber zu falschen Auswertungen führen.
-          </List>
-          <Box sx={{ aspectRatio: "16 / 9", width: "100%", mt: 2 }}>
-            <ReactPlayer
-              width="100%"
-              height="100%"
-              url="https://www.youtube.com/watch?v=AlZtmcSHVLA"
-              controls
-            />
-          </Box>
+          <Typography>
+            Die Flatex Umsatzhistorie beginnt ab 2020. Solltest du ein älteres
+            Depot haben, kannst du die vollständige Historie vom Support unter
+            info@flatex.at anfragen. Du kannst auch die unvollständige Historie
+            hineinladen, es kann dann aber zu falschen Auswertungen führen.
+          </Typography>
         </AccordionDetails>
       </Accordion>
-     
+
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography fontWeight="medium">
@@ -105,12 +100,12 @@ export default function FAQ() {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography paragraph>
+          <Typography>
             Deine Daten werden <b>nicht gespeichert</b> oder an Dritte
             weitergegeben. Das Tool verarbeitet die CSV-Dateien{" "}
             <b>lokal im Browser</b>.
           </Typography>
-          <Typography paragraph>Die einzigen Serverabfragen sind:</Typography>
+          <Typography>Die einzigen Serverabfragen sind:</Typography>
           <List>
             <FAQListItem>
               Aktuelle und historische Kurse der ISINs via Yahoo Finance
@@ -118,7 +113,10 @@ export default function FAQ() {
             <FAQListItem>
               Unternehmensdetails (Branche, Land, Währung) via Yahoo Finance
             </FAQListItem>
-            <FAQListItem>Aktuelle Währungskurse (<a href="https://frankfurter.dev/">frankfurter.dev</a>)</FAQListItem>
+            <FAQListItem>
+              Aktuelle Währungskurse (
+              <a href="https://frankfurter.dev/">frankfurter.dev</a>)
+            </FAQListItem>
             <FAQListItem>
               GitHub API für die Anzahl der Repository-Sterne
             </FAQListItem>
