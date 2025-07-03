@@ -14,6 +14,7 @@ import { ParsedAccountTransaction } from "../types/account-transaction";
 import { Asset } from "../types/asset";
 import { useMemo } from "react";
 import { ApexOptions } from "apexcharts";
+import { blue, cyan, green, grey, orange, red, yellow } from "@mui/material/colors";
 
 function extendSeriesToEnd(
     series: { date: Date; value: number | null }[],
@@ -81,25 +82,29 @@ export default function PerformanceChart({
                 id: SeriesIds.CASH_FLOWS,
                 name: "Investments",
                 data: toSeriesData(cashFlows),
-                color: theme.palette.secondary.main,
+                color: blue[500],
+                hidden: false,
             },
             {
                 id: SeriesIds.NET_WORTH,
                 name: "Net Worth",
                 data: toSeriesData(accumulatedNetWorth),
-                color: theme.palette.primary.main,
+                color: green[300],
+                hidden: false,
             },
             {
                 id: SeriesIds.CASH_POSITION,
                 name: "Cash Position",
                 data: toSeriesData(accumulatedCashPosition),
-                color: theme.palette.grey[500],
+                color: grey[500],
+                hidden: true,
             },
             {
                 id: SeriesIds.DEPOT_VALUE,
                 name: "Depot Value",
                 data: toSeriesData(accumulatedDepotValue),
-                color: theme.palette.success.main,
+                color: cyan[300],
+                hidden: true,
             },
         ],
         [
@@ -112,7 +117,7 @@ export default function PerformanceChart({
     );
 
     const apexSeries: ApexAxisChartSeries = useMemo(
-        () => lineSeries.map(({ name, data }) => ({ name, data })),
+        () => lineSeries.map(({ name, data, hidden }) => ({ name, data, hidden })),
         [lineSeries]
     );
 

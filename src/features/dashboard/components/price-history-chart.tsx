@@ -1,10 +1,11 @@
 "use client";
 
-import { LineChart } from "@mui/x-charts/LineChart";
-import { Typography, Box } from "@mui/material";
-import { blue, orange, yellow } from "@mui/material/colors";
+import { useMemo } from "react";
+import Chart from "react-apexcharts";
 import dayjs from "dayjs";
 import { ISO_FORMAT } from "../utils/date-parse";
+import { cyan, grey } from "@mui/material/colors";
+import { useTheme } from "@mui/material";
 
 type PricePoint = {
   date: string;
@@ -21,35 +22,38 @@ type Props = {
   priceHistory: PricePoint[];
   keyEvents?: KeyEvent[];
   title?: string;
-  colors?: Colors;
+  colors?: { [key: string]: string };
 };
-
-interface Colors {
-  [key: string]: string;
-}
 
 export default function PriceHistoryChart({
   priceHistory,
   keyEvents = [],
-  colors,
+  colors = {},
 }: Props) {
-  if (!priceHistory.length) {
-    return <Typography>No price history available</Typography>;
-  }
+  const theme = useTheme();
 
-  console.log(keyEvents, "keyEvents");
+  if (!priceHistory.length) return <p>No price history available</p>;
 
   const dates = priceHistory.map((p) => new Date(p.date));
   const prices = priceHistory.map((p) => (p.price === 0 ? null : p.price));
 
+  const dateIndexMap = useMemo(() => {
+    return new Map(dates.map((d, i) => [dayjs(d).format(ISO_FORMAT), i]));
+  }, [dates]);
+
+  const baseSeries = {
+    name: "Price",
+    data: priceHistory.map((p) => [
+      new Date(p.date).getTime(),
+      p.price === 0 ? null : p.price,
+    ]) as [number, number | null][],
+    color: grey[700],
+  };
+
   const uniqueEventTypes = Array.from(new Set(keyEvents.map((e) => e.type)));
 
-  const dateIndexMap = new Map(
-    dates.map((d, i) => [dayjs(d).format(ISO_FORMAT), i])
-  );
-
   const eventSeries = uniqueEventTypes.map((type) => {
-    const data = Array(dates.length).fill(null);
+    const points: [number, number | null][] = dates.map(() => [0, null]);
 
     keyEvents
       .filter((e) => e.type === type)
@@ -57,36 +61,69 @@ export default function PriceHistoryChart({
         const isoDate = dayjs(e.date).format(ISO_FORMAT);
         const index = dateIndexMap.get(isoDate);
         if (index !== undefined) {
-          data[index] = e.price ? e.price : prices[index];
+          const price = e.price ?? prices[index];
+          if (price != null) {
+            points[index] = [dates[index].getTime(), price];
+          }
         } else {
-          // TODO: handle missing dates
-          console.warn(`Date ${isoDate} not found in price history.`, e);
+          console.warn(`Date ${isoDate} not found in price history`, e);
         }
       });
 
+    const filtered = points.filter(([x, y]) => y !== null);
+
     return {
-      label: type,
-      data,
-      showMark: true,
-      color: colors?.[type] || "#ff9800",
+      name: type,
+      data: filtered,
+      color: colors[type] || cyan[300],
     };
   });
 
+  const apexSeries = [baseSeries, ...eventSeries];
+
+  const options: ApexCharts.ApexOptions = {
+    chart: {
+      type: "area",
+      height: 400,
+      toolbar: { show: false },
+      background: "transparent",
+      animations: { enabled: false },
+    },
+    dataLabels: {
+      enabledOnSeries: apexSeries.map((s, i) => {
+        if (i !== 0) {
+          return i;
+        }
+      }), // Only show on the first series (price)
+    },
+
+    theme: {
+      mode: theme.palette.mode as "light" | "dark",
+    },
+    stroke: { curve: "smooth" },
+    xaxis: {
+      type: "datetime",
+      labels: { datetimeUTC: false },
+    },
+    yaxis: {
+      labels: {
+        formatter: (value) => (value != null ? value.toFixed(2) : ""),
+      },
+    },
+    tooltip: {
+      x: { format: "dd MMM yyyy" },
+      y: {
+        formatter: (value) => (value != null ? value.toFixed(2) : "—"),
+      },
+    },
+    colors: apexSeries.map((s) => (s as any).color),
+    legend: {
+      position: "top",
+      horizontalAlign: "left",
+    },
+  };
+
   return (
-    <LineChart
-      sx={{ maxWidth: "100%", maxHeight: "100%", width: 600, height: 400 }}
-      xAxis={[{ scaleType: "time", data: dates }]}
-      series={[
-        {
-          area: true,
-          data: prices,
-          label: "Price",
-          showMark: false,
-          color: orange[200],
-          connectNulls: true,
-        },
-        ...eventSeries,
-      ]}
-    />
+    <Chart options={options} series={apexSeries} type="area" height={400} />
   );
 }
