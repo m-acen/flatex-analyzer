@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { ISO_FORMAT } from "../utils/date-parse";
 import { cyan, grey } from "@mui/material/colors";
 import { useTheme } from "@mui/material";
+import { useClientOnly } from "@/hooks/use-client-only";
 
 type PricePoint = {
   date: string;
@@ -31,6 +32,8 @@ export default function PriceHistoryChart({
   colors = {},
 }: Props) {
   const theme = useTheme();
+
+  const isClient = useClientOnly();
 
   if (!priceHistory.length) return <p>No price history available</p>;
 
@@ -122,7 +125,7 @@ export default function PriceHistoryChart({
       horizontalAlign: "left",
     },
   };
-
+  if (!isClient) return null;
   return (
     <Chart options={options} series={apexSeries} type="area" height={400} />
   );
