@@ -61,7 +61,7 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
 
   const queryKey = ["rawTransactionData", config?.dataPersistenceMode];
 
-  const { key } = useEncryptionKey();
+  const { key, isLoading: isEncryptionKeyLoading } = useEncryptionKey();
 
   const adapterMap = useMemo<
     Partial<Record<DataPersistenceMode, StorageAdapter<RawDataState>>>
@@ -85,7 +85,7 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
       if (!adapter) return defaultRawData;
       return (await adapter.load()) ?? defaultRawData;
     },
-    enabled: !isConfigLoading,
+    enabled: !isConfigLoading && !isEncryptionKeyLoading,
   });
 
   // --- Mutation for Porting Data ---
