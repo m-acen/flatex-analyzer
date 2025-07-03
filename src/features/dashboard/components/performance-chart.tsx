@@ -1,13 +1,40 @@
 "use client";
 
-import { Box, Chip, Typography, useTheme } from "@mui/material";
-import { LineChart } from "@mui/x-charts";
+import { useTheme } from "@mui/material";
+import Chart from "react-apexcharts";
 import { useShowValues } from "../hooks/use-show-values";
 import { ProgressState } from "../hooks/use-assets-calc";
-import { getAccumulatedCashFlows, getAccumulatedDepotValue, getAccumulatedCashPosition } from "../logic/analyze";
+import {
+    getAccumulatedCashFlows,
+    getAccumulatedDepotValue,
+    getAccumulatedCashPosition,
+    getCombinedNetWorth,
+} from "../logic/analyze";
 import { ParsedAccountTransaction } from "../types/account-transaction";
 import { Asset } from "../types/asset";
-import { useState } from "react";
+import { useMemo } from "react";
+import { ApexOptions } from "apexcharts";
+import { blue, cyan, green, grey, orange, red, yellow } from "@mui/material/colors";
+
+function extendSeriesToEnd(
+    series: { date: Date; value: number | null }[],
+    endDate: Date
+) {
+    if (series.length === 0) return [];
+
+    const lastValue = series[series.length - 1].value;
+    const extended = [...series];
+
+    const lastTimestamp = new Date(series[series.length - 1].date).getTime();
+    const endTimestamp = endDate.getTime();
+
+    if (lastTimestamp < endTimestamp && lastValue != null) {
+        extended.push({ date: new Date(endDate), value: lastValue });
+    }
+
+    return extended;
+}
+
 
 enum SeriesIds {
     CASH_FLOWS = "cashFlows",
@@ -25,104 +52,126 @@ export default function PerformanceChart({
     sortedItems: Asset[];
     progress: ProgressState;
 }) {
-    const [activeSeries, setActiveSeries] = useState<string[]>(Object.values(SeriesIds));
     const theme = useTheme();
     const { showValues } = useShowValues();
+
     const firstTransactionDate = accountTransactions[0]?.Buchtag;
 
-    const cashFlows = getAccumulatedCashFlows(
-        firstTransactionDate,
-        new Date(),
-        accountTransactions
-    );
+    const cashFlows = getAccumulatedCashFlows(accountTransactions);
 
     const accumulatedDepotValue =
         progress === ProgressState.COMPLETED
             ? getAccumulatedDepotValue(sortedItems, firstTransactionDate, new Date())
             : [];
 
-    const accumulatedCashPosition = getAccumulatedCashPosition(
-        firstTransactionDate,
-        new Date(),
-        accountTransactions
-    );
+    const accumulatedCashPosition = getAccumulatedCashPosition(accountTransactions);
 
     const accumulatedNetWorth =
         progress === ProgressState.COMPLETED
-            ? accumulatedDepotValue.map((d, index) => ({
-                date: d.date,
-                value: d.value + accumulatedCashPosition[index].value,
-            }))
+            ? getCombinedNetWorth(accumulatedCashPosition, accumulatedDepotValue)
             : [];
 
-    const series = [
-        {
-            id: SeriesIds.CASH_FLOWS,
-            data: cashFlows.map((d) => d.value),
-            label: "Investments",
-            showMark: false,
-            color: theme.palette.secondary.main,
-        },
-        {
-            id: SeriesIds.NET_WORTH,
-            data: accumulatedNetWorth.map((d) => d.value),
-            label: "Net Worth",
-            showMark: false,
-            connectNulls: true,
-            color: theme.palette.primary.main,
-        },
-        {
-            id: SeriesIds.CASH_POSITION,
-            data: accumulatedCashPosition.map((d) => d.value),
-            label: "Cash Position",
-            showMark: false,
-            connectNulls: true,
-            color: theme.palette.grey[500],
-        },
-        {
-            id: SeriesIds.DEPOT_VALUE,
-            data: accumulatedDepotValue.map((d) => d.value),
-            label: "Depot Value",
-            showMark: false,
-            connectNulls: true,
-            color: theme.palette.success.main,
-        },
-    ];
+    /** helper – convert {date,value}[] to Apex xy tuple format */
+    const toSeriesData = (arr: { date: Date; value: number | null }[]) =>
+        extendSeriesToEnd(arr, new Date()).map((d) => [new Date(d.date).getTime(), d.value] as [number, number | null]);
 
-    function handleSeriesClick(seriesId: string) {
-        if (activeSeries.includes(seriesId)) {
-            setActiveSeries(activeSeries.filter((id) => id !== seriesId));
-        }
-        else {
-            setActiveSeries([...activeSeries, seriesId]);
-        }
-    }
+    /** full list of series including styling */
+    const lineSeries = useMemo(
+        () => [
+            {
+                id: SeriesIds.CASH_FLOWS,
+                name: "Investments",
+                data: toSeriesData(cashFlows),
+                color: blue[500],
+                hidden: false,
+            },
+            {
+                id: SeriesIds.NET_WORTH,
+                name: "Net Worth",
+                data: toSeriesData(accumulatedNetWorth),
+                color: green[300],
+                hidden: false,
+            },
+            {
+                id: SeriesIds.CASH_POSITION,
+                name: "Cash Position",
+                data: toSeriesData(accumulatedCashPosition),
+                color: grey[500],
+                hidden: true,
+            },
+            {
+                id: SeriesIds.DEPOT_VALUE,
+                name: "Depot Value",
+                data: toSeriesData(accumulatedDepotValue),
+                color: cyan[300],
+                hidden: true,
+            },
+        ],
+        [
+            cashFlows,
+            accumulatedNetWorth,
+            accumulatedCashPosition,
+            accumulatedDepotValue,
+            theme.palette,
+        ]
+    );
 
-    return <>
-        <Box flexWrap={"wrap"} display="flex" flexDirection="row" gap={1} mb={2} alignItems="center">
-            <Chip size="small" variant={activeSeries.find(s => s == SeriesIds.CASH_FLOWS) ? "filled" : "outlined"} color="secondary" label="Investments" onClick={() => handleSeriesClick(SeriesIds.CASH_FLOWS)} />
-            <Chip size="small" variant={activeSeries.find(s => s == SeriesIds.NET_WORTH) ? "filled" : "outlined"} color="primary" label="Net Worth" onClick={() => handleSeriesClick(SeriesIds.NET_WORTH)} />
-            <Chip size="small" variant={activeSeries.find(s => s == SeriesIds.CASH_POSITION) ? "filled" : "outlined"} sx={{ color: theme.palette.grey[500] }} label="Cash Position" onClick={() => handleSeriesClick(SeriesIds.CASH_POSITION)} />
-            <Chip size="small" variant={activeSeries.find(s => s == SeriesIds.DEPOT_VALUE) ? "filled" : "outlined"} color="success" label="Depot Value" onClick={() => handleSeriesClick(SeriesIds.DEPOT_VALUE)} />
-        </Box>
-        <LineChart
-            yAxis={[
-                {
-                    valueFormatter: (value) => (showValues ? value : ""),
+    const apexSeries: ApexAxisChartSeries = useMemo(
+        () => lineSeries.map(({ name, data, hidden }) => ({ name, data, hidden })),
+        [lineSeries]
+    );
+
+    const options: ApexOptions = useMemo(
+        () => ({
+            chart: {
+                id: "performance-chart",
+                toolbar: { show: false },
+                animations: { enabled: false },
+                background: "transparent",
+            },
+            theme: {
+                mode: theme.palette.mode as "light" | "dark",
+            },
+            stroke: { curve: "smooth" },
+            xaxis: {
+                type: "datetime",
+                tooltip: { enabled: false },
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            yaxis: {
+                labels: {
+                    formatter: (value: number | null) =>
+                        showValues && value != null ? value.toFixed(0) : "",
                 },
-            ]}
-            sx={{
-                height: "100%",
-            }}
-            xAxis={[
-                {
-                    data: cashFlows.map((d) => d.date),
-                    scaleType: "time",
-                    label: "Date",
+            },
+            colors: lineSeries.map((s) => s.color),
+            tooltip: {
+                x: { format: "dd MMM yyyy" },
+                y: {
+                    formatter: (value: number | undefined) =>
+                        value != null ? value.toFixed(0) : "—",
                 },
-            ]}
-            series={series.filter((s) => activeSeries.includes(s.id))
-            }
-        />
-    </>
+            },
+            legend: {
+                show: true,
+                position: "top",
+                horizontalAlign: "left",
+                fontSize: "14px",
+                labels: {
+                    colors: theme.palette.text.primary,
+                },
+                onItemClick: {
+                    toggleDataSeries: true,
+                },
+                onItemHover: {
+                    highlightDataSeries: true,
+                },
+            },
+        }),
+        [showValues, lineSeries, theme.palette.mode, theme.palette.text.primary]
+    );
+
+    return <Chart options={options} series={apexSeries} type="area" height={350} />;
 }

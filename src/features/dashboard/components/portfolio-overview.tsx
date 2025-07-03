@@ -64,97 +64,87 @@ export function PortfolioOverview({
   return (
     <Box sx={{ p: 2 }} width={"100%"}>
       <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 12, md: 8, lg: 6 }}>
-          <Box sx={{
-            aspectRatio: {
-              xs: 'unset',
-              lg: '16/9',
-            },
-          }}>
-            <Paper sx={{ p: {lg: 4, xs: 2}, height: "100%" }}>
-            <PerformanceChart
-              accountTransactions={accountTransactions}
-              sortedItems={sortedItems}
-              progress={progress}
+        <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
+          <Box>
+            <Paper sx={{ p: { lg: 4, xs: 2 }, height: "100%" }}>
+              <PerformanceChart
+                accountTransactions={accountTransactions}
+                sortedItems={sortedItems}
+                progress={progress}
+              />
+            </Paper>
+          </Box>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+          <Paper sx={{ p: 2, height: "100%" }}>
+            <DepotChart depotItems={sortedItems} />
+          </Paper>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+          <Paper sx={{ p: 2, height: "100%" }}>
+            <PieChartSwitcher
+              dataSets={[
+                {
+                  key: "profit",
+                  label: "Profit",
+                  data: [
+                    {
+                      label: "Profit",
+                      value: profit,
+                      id: "profit",
+                    },
+                    {
+                      label: "Initial Investment",
+                      value: initialInvestment,
+                      id: "initialInvestment",
+                    },
+                  ],
+                },
+                {
+                  key: "depot",
+                  label: "Cash Position",
+                  data: [
+                    {
+                      label: "Cash Position",
+                      value: cashPosition,
+                      id: "cashPosition",
+                    },
+                    {
+                      label: "Depot Value",
+                      value: depotSum,
+                      id: "depotValue",
+                    },
+                  ],
+                },
+              ]}
             />
           </Paper>
-        </Box>
+        </Grid>
+        <Grid container spacing={2} sx={{ mb: 2 }} size={{ xs: 12 }}>
+          {kpis.map((kpi) => (
+            <Grid size={{ xs: 6, sm: 6, md: 6 }} key={kpi.label}>
+              <Card sx={{ height: "100%" }}>
+                <CardContent
+                  sx={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                  }}
+                >
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {kpi.label}
+                  </Typography>
+                  <Typography variant="h5" fontWeight="bold">
+                    {kpi.value}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
-        <Paper sx={{ p: 2, height: "100%" }}>
-          <DepotChart depotItems={sortedItems} />
-        </Paper>
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
-        <Paper sx={{ p: 2, height: "100%" }}>
-          <PieChartSwitcher
-            dataSets={[
-              {
-                key: "profit",
-                label: "Profit",
-                data: [
-                  {
-                    label: "Profit",
-                    value: profit,
-                    id: "profit",
-                  },
-                  {
-                    label: "Initial Investment",
-                    value: initialInvestment,
-                    id: "initialInvestment",
-                  },
-                ],
-              },
-              {
-                key: "depot",
-                label: "Cash Position",
-                data: [
-                  {
-                    label: "Cash Position",
-                    value: cashPosition,
-                    id: "cashPosition",
-                  },
-                  {
-                    label: "Depot Value",
-                    value: depotSum,
-                    id: "depotValue",
-                  },
-                ],
-              },
-            ]}
-          />
-        </Paper>
-      </Grid>
-      <Grid
-        container
-        spacing={2}
-        sx={{ mb: 2 }}
-        size={{ xs: 12 }}
-      >
-        {kpis.map((kpi) => (
-          <Grid size={{ xs: 6, sm: 6, md: 6 }} key={kpi.label}>
-            <Card sx={{ height: "100%" }}>
-              <CardContent
-                sx={{
-                  alignItems: "center",
-                  justifyContent: "center",
-                  display: "flex",
-                  flexDirection: "column",
-                  height: "100%",
-                }}
-              >
-                <Typography variant="subtitle2" color="text.secondary">
-                  {kpi.label}
-                </Typography>
-                <Typography variant="h5" fontWeight="bold">
-                  {kpi.value}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Grid>
-    </Box >
+    </Box>
   );
 }
