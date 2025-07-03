@@ -19,8 +19,14 @@ import {
   mergeDepotTransactions,
   mergeAccountTransactions,
 } from "../logic/transaction-parsing";
-import { AccountTransaction, ParsedAccountTransaction } from "../types/account-transaction";
-import { DepotTransaction, ParsedDepotTransaction } from "../types/depot-transaction";
+import {
+  AccountTransaction,
+  ParsedAccountTransaction,
+} from "../types/account-transaction";
+import {
+  DepotTransaction,
+  ParsedDepotTransaction,
+} from "../types/depot-transaction";
 import {
   createIndexedDBAdapter,
   createRamStorageAdapter,
@@ -45,7 +51,6 @@ interface RawDataContextType {
   deleteAccountDataSet: (id: string) => void;
 }
 
-
 const RawDataContext = createContext<RawDataContextType | undefined>(undefined);
 const defaultRawData: RawDataState = { depot: [], account: [] };
 
@@ -58,11 +63,16 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
 
   const { key } = useEncryptionKey();
 
-  const adapterMap: Partial<Record<DataPersistenceMode, StorageAdapter<RawDataState>>> = {
-    local: createIndexedDBAdapter<RawDataState>("raw_transaction_data"),
-    none: createRamStorageAdapter<RawDataState>(defaultRawData),
-    server: createServerAdapter(key)
-  };
+  const adapterMap = useMemo<
+    Partial<Record<DataPersistenceMode, StorageAdapter<RawDataState>>>
+  >(
+    () => ({
+      local: createIndexedDBAdapter<RawDataState>("raw_transaction_data"),
+      none: createRamStorageAdapter<RawDataState>(defaultRawData),
+      server: createServerAdapter(key),
+    }),
+    [key]
+  );
 
   useEffect(() => {
     queryClient.refetchQueries();
@@ -80,9 +90,18 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
 
   // --- Mutation for Porting Data ---
   const portDataMutation = useMutation({
-    mutationFn: async ({ oldAdapter, newAdapter }: { oldAdapter: StorageAdapter<RawDataState>; newAdapter: StorageAdapter<RawDataState> }) => {
+    mutationFn: async ({
+      oldAdapter,
+      newAdapter,
+    }: {
+      oldAdapter: StorageAdapter<RawDataState>;
+      newAdapter: StorageAdapter<RawDataState>;
+    }) => {
       const currentData = await oldAdapter.load();
-      const dataToPort = currentData !== undefined && Object.keys(currentData).length > 0 ? currentData : defaultRawData;
+      const dataToPort =
+        currentData !== undefined && Object.keys(currentData).length > 0
+          ? currentData
+          : defaultRawData;
       await newAdapter.save(dataToPort);
       await oldAdapter.clear();
     },
@@ -128,7 +147,6 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
     previousMode.current = currentMode;
   }, [config?.dataPersistenceMode, isConfigLoading, isDataLoading]);
 
-
   // --- Mutation for User-Initiated Updates ---
   const updateMutation = useMutation({
     mutationFn: async (newData: RawDataState) => {
@@ -143,7 +161,7 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
     onError: (err) => {
       setError(`Failed to save data: ${(err as Error).message}`);
       console.error("Error saving raw data:", err);
-    }
+    },
   });
 
   // --- Event Handlers ---
@@ -187,17 +205,24 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
   const accountDataSets = rawData?.account ?? [];
 
   const parsedDepotTransactions = useMemo(
-    () => mergeDepotTransactions(
-      depotDataSets.map((ds) => handleParseDepotTransactionData(ds.data) ?? [])
-    ), [depotDataSets]
+    () =>
+      mergeDepotTransactions(
+        depotDataSets.map(
+          (ds) => handleParseDepotTransactionData(ds.data) ?? []
+        )
+      ),
+    [depotDataSets]
   );
 
   const parsedAccountTransactions = useMemo(
-    () => mergeAccountTransactions(
-      accountDataSets.map((ds) => handleParseAccountTransactionData(ds.data) ?? [])
-    ), [accountDataSets]
+    () =>
+      mergeAccountTransactions(
+        accountDataSets.map(
+          (ds) => handleParseAccountTransactionData(ds.data) ?? []
+        )
+      ),
+    [accountDataSets]
   );
-
 
   const value: RawDataContextType = {
     depotDataSets,
@@ -206,7 +231,11 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
     parsedAccountTransactions,
     error,
     // The overall loading state now includes the porting mutation's status
-    isLoading: isConfigLoading || isDataLoading || updateMutation.isPending || portDataMutation.isPending,
+    isLoading:
+      isConfigLoading ||
+      isDataLoading ||
+      updateMutation.isPending ||
+      portDataMutation.isPending,
     // isPorting is now derived directly from the mutation's state
     isPorting: portDataMutation.isPending,
     handleRawCsvUpload,
@@ -215,9 +244,7 @@ export const RawDataProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <RawDataContext.Provider value={value}>
-      {children}
-    </RawDataContext.Provider>
+    <RawDataContext.Provider value={value}>{children}</RawDataContext.Provider>
   );
 };
 
