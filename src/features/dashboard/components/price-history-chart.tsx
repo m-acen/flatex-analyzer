@@ -3,31 +3,36 @@
 import { useMemo } from "react";
 import dayjs from "dayjs";
 import { ISO_FORMAT } from "../utils/date-parse";
-import { cyan, grey } from "@mui/material/colors";
+import { cyan, grey, orange } from "@mui/material/colors";
 import { useTheme } from "@mui/material";
 import { useClientOnly } from "@/hooks/use-client-only";
+import dynamic from "next/dynamic";
+import type { ApexOptions } from "apexcharts";
 
-import dynamic from 'next/dynamic'
+const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+export type PricePoint = { date: string; price: number };
+export type KeyEvent   = { date: Date; price?: number; type: string };
 
-type PricePoint = {
-  date: string;
-  price: number;
-};
-
-type KeyEvent = {
-  date: Date;
-  price?: number;
-  type: string;
-};
-
-type Props = {
+interface Props {
   priceHistory: PricePoint[];
   keyEvents?: KeyEvent[];
-  title?: string;
-  colors?: { [key: string]: string };
-};
+  colors?: Record<string, string>;
+}
+
+/* Minimal shape needed for Apex point annotations */
+interface PointAnnotation {
+  x: number | string;
+  y: number;
+  marker?: { size?: number; fillColor?: string; strokeColor?: string };
+  label?: {
+    text?: string;
+    borderColor?: string;
+    style?: { fontSize?: string; background?: string; color?: string };
+  };
+}
+
+const CHART_HEIGHT = 400;
 
 export default function PriceHistoryChart({
   priceHistory,
@@ -35,101 +40,79 @@ export default function PriceHistoryChart({
   colors = {},
 }: Props) {
   const theme = useTheme();
-
   const isClient = useClientOnly();
 
-  if (!priceHistory.length) return <p>No price history available</p>;
+  /* Build chart data & annotations exactly once per prop‑change */
+  const { series, annotations } = useMemo(() => {
+    if (!priceHistory.length) return { series: [], annotations: [] as PointAnnotation[] };
 
-  const dates = priceHistory.map((p) => new Date(p.date));
-  const prices = priceHistory.map((p) => (p.price === 0 ? null : p.price));
+    const dates = priceHistory.map(({ date }) => new Date(date));
+    const prices = priceHistory.map(({ price }) => (price === 0 ? null : price));
 
-  const dateIndexMap = useMemo(() => {
-    return new Map(dates.map((d, i) => [dayjs(d).format(ISO_FORMAT), i]));
-  }, [dates]);
+    const isoIndex = new Map(
+      dates.map((d, i) => [dayjs(d).format(ISO_FORMAT), i])
+    );
 
-  const baseSeries = {
-    name: "Price",
-    data: priceHistory.map((p) => [
-      new Date(p.date).getTime(),
-      p.price === 0 ? null : p.price,
-    ]) as [number, number | null][],
-    color: grey[700],
-  };
-
-  const uniqueEventTypes = Array.from(new Set(keyEvents.map((e) => e.type)));
-
-  const eventSeries = uniqueEventTypes.map((type) => {
-    const points: [number, number | null][] = dates.map(() => [0, null]);
-
-    keyEvents
-      .filter((e) => e.type === type)
-      .forEach((e) => {
-        const isoDate = dayjs(e.date).format(ISO_FORMAT);
-        const index = dateIndexMap.get(isoDate);
-        if (index !== undefined) {
-          const price = e.price ?? prices[index];
-          if (price != null) {
-            points[index] = [dates[index].getTime(), price];
-          }
-        } else {
-          console.warn(`Date ${isoDate} not found in price history`, e);
-        }
-      });
-
-    const filtered = points.filter(([x, y]) => y !== null);
-
-    return {
-      name: type,
-      data: filtered,
-      color: colors[type] || cyan[300],
+    const priceSeries = {
+      name: "Price",
+      data: dates.reduce<[number, number][]>((pts, d, i) => {
+        const y = prices[i];
+        if (y != null) pts.push([d.getTime(), y]);
+        return pts;
+      }, []),
+      color: orange[300],
     };
-  });
 
-  const apexSeries = [baseSeries, ...eventSeries];
+    const points: PointAnnotation[] = [];
+    keyEvents.forEach(({ date, price, type }) => {
+      const iso = dayjs(date).format(ISO_FORMAT);
+      const idx = isoIndex.get(iso);
+      const y = price ?? (idx !== undefined ? prices[idx] : null);
+      if (y == null) return;
 
-  const options: ApexCharts.ApexOptions = {
+      const color = colors[type] ?? cyan[300];
+      points.push({
+        x: new Date(date).getTime(),
+        y,
+        marker: { size: 6, fillColor: color, strokeColor: theme.palette.background.paper },
+        label: {
+          text: type,
+          borderColor: color,
+          style: {
+            fontSize: "12px",
+            background: theme.palette.background.paper,
+            color: theme.palette.mode === "dark" ? theme.palette.common.white : theme.palette.common.black,
+          },
+        },
+      });
+    });
+
+    return { series: [priceSeries], annotations: points };
+  }, [priceHistory, keyEvents, colors, theme.palette.mode]);
+
+  if (!series.length) return <p>No price history available</p>;
+  if (!isClient) return null;
+
+  const options: ApexOptions = {
     chart: {
       type: "area",
-      height: 400,
+      height: CHART_HEIGHT,
       toolbar: { show: false },
-      background: "transparent",
       animations: { enabled: false },
     },
-    dataLabels: {
-      enabledOnSeries: apexSeries.map((s, i) => {
-        if (i !== 0) {
-          return i;
-        }
-      }), // Only show on the first series (price)
-    },
-
-    theme: {
-      mode: theme.palette.mode as "light" | "dark",
-    },
     stroke: { curve: "smooth" },
-    xaxis: {
-      type: "datetime",
-      labels: { datetimeUTC: false },
-    },
-    yaxis: {
-      labels: {
-        formatter: (value) => (value != null ? value.toFixed(2) : ""),
-      },
-    },
+    dataLabels: { enabled: false },
+    theme: { mode: theme.palette.mode as "light" | "dark" },
+    xaxis: { type: "datetime", labels: { datetimeUTC: false } },
+    yaxis: { labels: { formatter: (v) => (v != null ? v.toFixed(2) : "") } },
     tooltip: {
       x: { format: "dd MMM yyyy" },
-      y: {
-        formatter: (value) => (value != null ? value.toFixed(2) : "—"),
-      },
+      y: { formatter: (v) => (v != null ? v.toFixed(2) : "—") },
     },
-    colors: apexSeries.map((s) => (s as any).color),
-    legend: {
-      position: "top",
-      horizontalAlign: "left",
-    },
+    legend: { position: "top", horizontalAlign: "left" },
+    annotations: { points: annotations },
+    colors: series.map((s: any) => s.color),
   };
-  if (!isClient) return null;
-  return (
-    <Chart options={options} series={apexSeries} type="area" height={400} />
-  );
+
+  return <Chart options={options} series={series} type="area" height={CHART_HEIGHT} />;
 }

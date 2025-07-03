@@ -12,10 +12,7 @@ import {
 } from "@mui/material";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import { green, red, blue } from "@mui/material/colors";
-import {
-  NorthWest,
-  SouthEast,
-} from "@mui/icons-material";
+import { NorthWest, SouthEast } from "@mui/icons-material";
 import PriceHistoryChart from "./price-history-chart";
 import dayjs from "dayjs";
 import { Asset } from "../types/asset";
@@ -115,15 +112,21 @@ function AssetHistoryItem({ item }: { item: Asset }) {
 
   return (
     <Box>
-      <PriceHistoryChart
-        priceHistory={item.priceHistory}
-        keyEvents={[...investmentEvents, ...realizedEvents, ...dividendEvents]}
-        colors={{
-          Buy: green[500],
-          Sell: red[500],
-          Dividend: blue[500],
-        }}
-      />
+      <Box overflow={"hidden"}>
+        <PriceHistoryChart
+          priceHistory={item.priceHistory}
+          keyEvents={[
+            ...investmentEvents,
+            ...realizedEvents,
+            ...dividendEvents,
+          ]}
+          colors={{
+            Buy: green[500],
+            Sell: red[500],
+            Dividend: blue[500],
+          }}
+        />
+      </Box>
       <TableContainer
         sx={{ maxHeight: 400, overflowY: "auto" }}
         component={Paper}
