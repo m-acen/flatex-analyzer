@@ -63,7 +63,7 @@ export function DepotItemCard({ item }: { item: Asset }) {
           opacity: item.details.quantity <= 0 ? 0.5 : 1,
         }}
         onClick={() => {
-          setOpen(item.priceHistory !== null);
+          setOpen(item.priceHistory != null);
           console.log(item);
         }}
       >
