@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
-import Chart from "react-apexcharts";
 import dayjs from "dayjs";
 import { ISO_FORMAT } from "../utils/date-parse";
 import { cyan, grey } from "@mui/material/colors";
 import { useTheme } from "@mui/material";
 import { useClientOnly } from "@/hooks/use-client-only";
+
+import dynamic from 'next/dynamic'
+
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 type PricePoint = {
   date: string;

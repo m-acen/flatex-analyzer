@@ -1,7 +1,6 @@
 "use client";
 
 import { useTheme } from "@mui/material";
-import Chart from "react-apexcharts";
 import { useShowValues } from "../hooks/use-show-values";
 import { ProgressState } from "../hooks/use-assets-calc";
 import {
@@ -24,6 +23,10 @@ import {
   yellow,
 } from "@mui/material/colors";
 import { useClientOnly } from "@/hooks/use-client-only";
+
+import dynamic from 'next/dynamic'
+
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 function extendSeriesToEnd(
   series: { date: Date; value: number | null }[],
