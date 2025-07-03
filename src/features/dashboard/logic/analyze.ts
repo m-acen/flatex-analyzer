@@ -143,44 +143,63 @@ export function calculateXIRR(
 }
 
 export function getAccumulatedCashFlows(
-  startDate: Date,
-  endDate: Date,
   accountTransactions: ParsedAccountTransaction[]
 ): CashFlow[] {
   const cashFlows: CashFlow[] = [];
   let accumulatedValue = 0;
 
-  // Group transactions by date for fast lookup
-  const transactionsByDate = new Map<string, ParsedAccountTransaction[]>();
-  for (const tx of accountTransactions) {
-    if (tx["IBAN / Kontonummer"]) {
-      const dateKey = dayjs(tx.Valuta).format(ISO_FORMAT);
-      if (!transactionsByDate.has(dateKey)) {
-        transactionsByDate.set(dateKey, []);
-      }
-      transactionsByDate.get(dateKey)!.push(tx);
+  // Sort transactions for deterministic accumulation
+  const sortedTransactions = [...accountTransactions].sort(
+    (a, b) => new Date(a.Valuta).getTime() - new Date(b.Valuta).getTime()
+  );
+
+  const seenDates = new Set<string>();
+
+  for (const tx of sortedTransactions) {
+    if (!tx["IBAN / Kontonummer"]) continue; // Skip transactions without IBAN
+    const dateKey = dayjs(tx.Valuta).format(ISO_FORMAT);
+    accumulatedValue += tx.Betrag;
+
+    if (!seenDates.has(dateKey)) {
+      seenDates.add(dateKey);
+      cashFlows.push({
+        date: dayjs(tx.Valuta).toDate(),
+        value: accumulatedValue,
+      });
+    } else {
+      // Update last entry (same day, multiple transactions)
+      cashFlows[cashFlows.length - 1].value = accumulatedValue;
     }
-  }
-
-  // Iterate through each day and accumulate
-  const start = dayjs(startDate);
-  const end = dayjs(endDate);
-
-  for (let date = start; !date.isAfter(end); date = date.add(1, "day")) {
-    const dateKey = date.format(ISO_FORMAT);
-    const transactions = transactionsByDate.get(dateKey) || [];
-
-    for (const tx of transactions) {
-      accumulatedValue += tx.Betrag;
-    }
-
-    cashFlows.push({
-      date: date.toDate(),
-      value: accumulatedValue,
-    });
   }
 
   return cashFlows;
+}
+
+export function getAccumulatedCashPosition(
+  accountTransactions: ParsedAccountTransaction[]
+): { date: Date; value: number }[] {
+  const result: { date: Date; value: number }[] = [];
+  const sortedTransactions = [...accountTransactions].sort(
+    (a, b) => new Date(a.Valuta).getTime() - new Date(b.Valuta).getTime()
+  );
+
+  let totalCash = 0;
+  const dateToTotal = new Map<string, number>();
+
+  for (const tx of sortedTransactions) {
+    const dateKey = dayjs(tx.Valuta).format(ISO_FORMAT);
+    totalCash += tx.Betrag;
+    dateToTotal.set(dateKey, totalCash);
+  }
+
+  for (const [dateKey, value] of dateToTotal.entries()) {
+    result.push({
+      date: dayjs(dateKey).toDate(),
+      value,
+    });
+  }
+
+  return result;
 }
 
 export function getAccumulatedDepotValue(
@@ -226,7 +245,6 @@ export function getAccumulatedDepotValue(
     assetQuantityByDate.set(asset, quantityMap);
   }
 
-  // Helper: calculate median
   function median(values: number[]): number | null {
     if (values.length === 0) return null;
     const sorted = [...values].sort((a, b) => a - b);
@@ -257,19 +275,19 @@ export function getAccumulatedDepotValue(
       value: dailyValue,
     });
 
-    const isEndOfWeek =
-      date.date() === 1 || date.date() === 15 || date.isSame(end, "day"); // Sunday or end date
-    if (isEndOfWeek) {
-      const values = weekBuffer
-        .map((entry) => entry.value)
-        .filter((v) => v > 0);
+    const isMedianDay =
+      date.date() === 1 || date.date() === 15 || date.isSame(end, "day");
+    if (isMedianDay) {
+      const values = weekBuffer.map((entry) => entry.value).filter((v) => v > 0);
       const weekMedian = median(values);
 
       for (const entry of weekBuffer) {
-        result.push({
-          date: entry.date,
-          value: weekMedian,
-        });
+        if (entry.date.getDate() === 1 || entry.date.getDate() === 15 || dayjs(entry.date).isSame(end, "day")) {
+          result.push({
+            date: entry.date,
+            value: weekMedian,
+          });
+        }
       }
 
       weekBuffer = [];
@@ -279,44 +297,43 @@ export function getAccumulatedDepotValue(
   return result;
 }
 
-export function getAccumulatedCashPosition(
-  startDate: Date,
-  endDate: Date,
-  accountTransactions: ParsedAccountTransaction[]
+export function getCombinedNetWorth(
+  cashFlowHistory: { date: Date; value: number }[],
+  depotValueHistory: { date: Date; value: number | null }[]
 ): { date: Date; value: number }[] {
-  const start = dayjs(startDate).startOf("day");
-  const end = dayjs(endDate).startOf("day");
+
+  // Convert inputs to maps for lookup
+  const cashMap = new Map<string, number>();
+  for (const entry of cashFlowHistory) {
+    const key = dayjs(entry.date).format(ISO_FORMAT);
+    cashMap.set(key, entry.value);
+  }
+
+  const depotMap = new Map<string, number>();
+  for (const entry of depotValueHistory) {
+    const key = dayjs(entry.date).format(ISO_FORMAT);
+    if (entry.value != null) {
+      depotMap.set(key, entry.value);
+    }
+  }
+
+  // Collect all relevant dates (union)
+  const allDates = Array.from(
+    new Set([...cashMap.keys(), ...depotMap.keys()])
+  ).sort();
 
   const result: { date: Date; value: number }[] = [];
 
-  // Sort transactions for correct chronological processing
-  const sortedTransactions = [...accountTransactions].sort(
-    (a, b) => new Date(a.Valuta).getTime() - new Date(b.Valuta).getTime()
-  );
+  let lastCash = 0;
+  let lastDepot = 0;
 
-  let totalCash = 0;
-  let txIndex = 0;
-
-  for (
-    let date = start.clone();
-    !date.isAfter(end);
-    date = date.add(1, "day")
-  ) {
-    const currentDayStr = date.format(ISO_FORMAT);
-
-    // Process all transactions for the current day
-    while (
-      txIndex < sortedTransactions.length &&
-      dayjs(sortedTransactions[txIndex].Valuta).format(ISO_FORMAT) ===
-        currentDayStr
-    ) {
-      totalCash += sortedTransactions[txIndex].Betrag;
-      txIndex++;
-    }
+  for (const dateStr of allDates) {
+    if (cashMap.has(dateStr)) lastCash = cashMap.get(dateStr)!;
+    if (depotMap.has(dateStr)) lastDepot = depotMap.get(dateStr)!;
 
     result.push({
-      date: date.toDate(),
-      value: totalCash,
+      date: dayjs(dateStr).toDate(),
+      value: lastCash + lastDepot,
     });
   }
 

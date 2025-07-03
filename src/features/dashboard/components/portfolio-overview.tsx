@@ -65,12 +65,7 @@ export function PortfolioOverview({
     <Box sx={{ p: 2 }} width={"100%"}>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 12, md: 8, lg: 6 }}>
-          <Box sx={{
-            aspectRatio: {
-              xs: 'unset',
-              lg: '16/9',
-            },
-          }}>
+          <Box>
             <Paper sx={{ p: {lg: 4, xs: 2}, height: "100%" }}>
             <PerformanceChart
               accountTransactions={accountTransactions}
