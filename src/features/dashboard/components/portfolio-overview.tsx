@@ -53,7 +53,7 @@ export function PortfolioOverview({
       value: xirr !== 0 ? `${(xirr * 100).toFixed(2)}%` : "N/A",
     },
     {
-      label: "Total Performance",
+      label: "Total Return",
       value: `${(
         ((totalValue - initialInvestment) / initialInvestment) *
         100
