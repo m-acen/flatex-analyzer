@@ -185,19 +185,16 @@ export default function PerformancePage() {
         <ToggleButton value={5}>5Y</ToggleButton>
         <ToggleButton value="all">All</ToggleButton>
       </ToggleButtonGroup>
-
-      {progress.state === ProgressState.COMPLETED && (
-        <Chart
-          options={options}
-          series={[
-            { name: "Your Performance", data: networthSeries },
-            ...benchmarkSeries,
-          ]}
-          type="area"
-          height={350}
-          width="100%"
-        />
-      )}
+      <Chart
+        options={options}
+        series={[
+          { name: "Your Performance", data: networthSeries },
+          ...benchmarkSeries,
+        ]}
+        type="area"
+        height={350}
+        width="100%"
+      />
     </Box>
   );
 }
