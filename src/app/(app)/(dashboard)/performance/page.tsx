@@ -15,6 +15,8 @@ import {
   getCombinedNetWorth,
   DateValue,
   getAccumulatedCashFlows,
+  getAccountCashFlows,
+  calculatePortfolioIndex,
 } from "@/features/dashboard/logic/analyze";
 import { usePriceHistory } from "@/features/dashboard/hooks/use-price-history";
 import { ISO_FORMAT } from "@/features/dashboard/utils/date-parse";
@@ -134,7 +136,8 @@ export default function PerformancePage() {
     end: dayjs().format(ISO_FORMAT),
     tickers: tickers.map((t) => t.ticker),
   });
-calculatePortfolioIndex
+  const accountCashFlows = getAccountCashFlows(accountTransactions, 1);
+
   const investments = getAccumulatedCashFlows(accountTransactions);
 
   const accumulatedDepotValue =
@@ -150,9 +153,23 @@ calculatePortfolioIndex
       ? getCombinedNetWorth(accumulatedCashPosition, accumulatedDepotValue)
       : [];
   const diff = getRelativeProfit(accumulatedNetWorth, investments);
+
+  const portfolioIndex = calculatePortfolioIndex(
+    accumulatedNetWorth,
+    accountCashFlows
+  );
+  console.log("Portfolio Index:", portfolioIndex, accumulatedNetWorth, accountCashFlows);
   const networthSeries = useMemo(
-    () => toApexSeriesData(diff), //
-    [diff]
+    () =>
+      toApexSeriesData(
+        portfolioIndex.map((i) => {
+          return {
+            date: i.date,
+            value: i.index - 1,
+          };
+        })
+      ),
+    [portfolioIndex]
   );
 
   const benchmarkSeries = useMemo(() => {
