@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { Box, useTheme } from "@mui/material";
+import { Box, ToggleButton, ToggleButtonGroup, useTheme } from "@mui/material";
 import { ApexOptions } from "apexcharts";
 import dayjs from "dayjs";
 import { green, blue, red, cyan, orange, purple } from "@mui/material/colors";
@@ -42,87 +42,13 @@ function getNormalizedDateValues(values: DateValue[]): DateValue[] {
   }));
 }
 
-function getRelativeProfit(
-  networthValues: DateValue[],
-  investmentValues: DateValue[]
-): DateValue[] {
-  const result: DateValue[] = [];
-  for (let i = 0; i < networthValues.length; i++) {
-    const investmentValue = getLatestDateValue(
-      investmentValues,
-      networthValues[i].date
-    );
-    result.push({
-      date: networthValues[i].date,
-      value:
-        (networthValues[i].value - investmentValue.value) /
-        investmentValue.value,
-    });
-  }
-  return result;
-}
-
-function getEntryToEntryRelativeDeltas(values: DateValue[]): DateValue[] {
-  if (values.length < 2) return [];
-
-  const result: DateValue[] = [];
-
-  let previous = values[0];
-  for (let i = 1; i < values.length; i++) {
-    const current = values[i];
-    if (previous.value === 0) {
-      previous = current;
-      continue;
-    }
-
-    const delta = (current.value - previous.value) / previous.value;
-    result.push({ date: current.date, value: delta });
-
-    previous = current;
-  }
-
-  return result;
-}
-
-function getAccumulatedRelativeDeltaPerYear(
-  deltas: DateValue[],
-  average: boolean
-): DateValue[] {
-  const yearlyGroups = new Map<number, { deltas: number[]; lastDate: Date }>();
-
-  for (const entry of deltas) {
-    const year = entry.date.getFullYear();
-    const group = yearlyGroups.get(year) ?? {
-      deltas: [],
-      lastDate: entry.date,
-    };
-    group.deltas.push(entry.value);
-    group.lastDate = entry.date; // override to get last timestamp in year
-    yearlyGroups.set(year, group);
-  }
-
-  return Array.from(yearlyGroups.entries())
-    .sort(([a], [b]) => a - b)
-    .map(([_, { deltas, lastDate }]) => ({
-      date: lastDate,
-      value:
-        deltas.reduce((sum, d) => sum + d, 0) / (average ? deltas.length : 1),
-    }));
-}
-
-function getAccumulatedYearlyRelativeDelta(
-  values: DateValue[],
-  average: boolean
-): DateValue[] {
-  if (values.length < 2) return [];
-
-  const deltas = getEntryToEntryRelativeDeltas(values);
-  return getAccumulatedRelativeDeltaPerYear(deltas, average);
-}
-
-// Convert to ApexChart format
 function toApexSeriesData(arr: DateValue[]): [number, number | null][] {
   return arr.map((d) => [d.date.getTime(), d.value] as [number, number | null]);
+}
+
+function timeframeToDate(timeframe: 1 | 3 | 5 | "all"): Date {
+  if (timeframe === "all") return undefined;
+  return dayjs().subtract(timeframe, "year").toDate();
 }
 
 export default function PerformancePage() {
@@ -137,8 +63,14 @@ export default function PerformancePage() {
     tickers: tickers.map((t) => t.ticker),
   });
   const accountCashFlows = getAccountCashFlows(accountTransactions, 1);
+  const [timeframe, setTimeframe] = useState<1 | 3 | 5 | "all">("all");
 
-  const investments = getAccumulatedCashFlows(accountTransactions);
+  const handleTimeframeChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newValue: 1 | 3 | 5 | "all" | null
+  ) => {
+    if (newValue !== null) setTimeframe(newValue);
+  };
 
   const accumulatedDepotValue =
     progress.state === ProgressState.COMPLETED
@@ -152,25 +84,23 @@ export default function PerformancePage() {
     progress.state === ProgressState.COMPLETED
       ? getCombinedNetWorth(accumulatedCashPosition, accumulatedDepotValue)
       : [];
-  const diff = getRelativeProfit(accumulatedNetWorth, investments);
 
-  const portfolioIndex = calculatePortfolioIndex(
-    accumulatedNetWorth,
-    accountCashFlows
-  );
-  console.log("Portfolio Index:", portfolioIndex, accumulatedNetWorth, accountCashFlows);
-  const networthSeries = useMemo(
-    () =>
-      toApexSeriesData(
-        portfolioIndex.map((i) => {
-          return {
-            date: i.date,
-            value: i.index - 1,
-          };
-        })
-      ),
-    [portfolioIndex]
-  );
+  const networthSeries = useMemo(() => {
+    const portfolioIndex = calculatePortfolioIndex(
+      accumulatedNetWorth,
+      accountCashFlows,
+      timeframeToDate(timeframe),
+      new Date()
+    );
+    return toApexSeriesData(
+      portfolioIndex.map((i) => {
+        return {
+          date: i.date,
+          value: i.index - 1,
+        };
+      })
+    );
+  }, [accumulatedNetWorth, accountCashFlows, timeframe]);
 
   const benchmarkSeries = useMemo(() => {
     if (!priceData?.dates || !priceData.prices) return [];
@@ -181,6 +111,9 @@ export default function PerformancePage() {
           date: new Date(dateStr),
           value: priceData.prices[ticker]?.[idx] ?? null,
         }))
+        .filter(
+          (d) => timeframe === "all" || d.date >= timeframeToDate(timeframe)
+        )
         .filter((d) => d.value !== null) as DateValue[];
 
       return {
@@ -188,7 +121,7 @@ export default function PerformancePage() {
         data: toApexSeriesData(getNormalizedDateValues(priceValues)),
       };
     });
-  }, [priceData, isLoading]);
+  }, [priceData, isLoading, timeframe]);
 
   const options: ApexOptions = {
     chart: {
@@ -237,6 +170,22 @@ export default function PerformancePage() {
 
   return (
     <Box sx={{ width: "100%", height: "100%", p: 8 }}>
+      <ToggleButtonGroup
+        orientation="horizontal"
+        value={timeframe}
+        exclusive
+        onChange={handleTimeframeChange}
+        aria-label="timeframe selection"
+        color="primary"
+        sx={{ mt: 2, mb: 4 }}
+        size="small"
+      >
+        <ToggleButton value={1}>1Y</ToggleButton>
+        <ToggleButton value={3}>3Y</ToggleButton>
+        <ToggleButton value={5}>5Y</ToggleButton>
+        <ToggleButton value="all">All</ToggleButton>
+      </ToggleButtonGroup>
+
       {progress.state === ProgressState.COMPLETED && (
         <Chart
           options={options}

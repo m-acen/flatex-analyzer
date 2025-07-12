@@ -11,32 +11,46 @@ export interface DateValue {
 
 export function calculatePortfolioIndex(
   portfolioValues: DateValue[],
-  cashflows: DateValue[]
+  cashflows: DateValue[],
+  startDate?: Date,
+  endDate?: Date
 ): { date: Date; index: number }[] {
   if (portfolioValues.length === 0) return [];
 
-  // Ensure cashflows are sorted
-  const cashflowsSorted = [...cashflows].sort(
-    (a, b) => a.date.getTime() - b.date.getTime()
+  // Filter portfolioValues by date range
+  const filteredPortfolio = portfolioValues.filter(
+    (entry) =>
+      (!startDate || entry.date >= startDate) &&
+      (!endDate || entry.date <= endDate)
   );
+  if (filteredPortfolio.length === 0) return [];
+
+  // Ensure cashflows are sorted and filtered by date range
+  const cashflowsSorted = [...cashflows]
+    .filter(
+      (cf) =>
+        (!startDate || cf.date >= startDate) &&
+        (!endDate || cf.date <= endDate)
+    )
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   let cfIndex = 0; // pointer to current cashflow
 
   const result: { date: Date; index: number }[] = [];
-  let prevValue = portfolioValues[0].value;
+  let prevValue = filteredPortfolio[0].value;
   let index = 1; // normalized index starts at 1
 
-  result.push({ date: portfolioValues[0].date, index });
+  result.push({ date: filteredPortfolio[0].date, index });
 
-  for (let i = 1; i < portfolioValues.length; i++) {
-    const currDate = portfolioValues[i].date;
-    const currValue = portfolioValues[i].value;
+  for (let i = 1; i < filteredPortfolio.length; i++) {
+    const currDate = filteredPortfolio[i].date;
+    const currValue = filteredPortfolio[i].value;
 
     // Sum all cashflows between previous and current date (exclusive of currDate)
     let cfAmount = 0;
     while (
       cfIndex < cashflowsSorted.length &&
-      cashflowsSorted[cfIndex].date > portfolioValues[i - 1].date &&
+      cashflowsSorted[cfIndex].date > filteredPortfolio[i - 1].date &&
       cashflowsSorted[cfIndex].date <= currDate
     ) {
       cfAmount += cashflowsSorted[cfIndex].value;
