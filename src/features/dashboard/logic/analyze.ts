@@ -3,6 +3,57 @@ import { ParsedAccountTransaction } from "../types/account-transaction";
 import { Asset } from "../types/asset";
 import { ISO_FORMAT } from "../utils/date-parse";
 
+export interface DateValue {
+  date: Date;
+  value: number;
+};
+
+export function calculatePortfolioIndex(
+  portfolioValues: DateValue[],
+  cashflows: DateValue[]
+): { date: Date; index: number }[] {
+  if (portfolioValues.length === 0) return [];
+
+  // Ensure cashflows are sorted
+  const cashflowsSorted = [...cashflows].sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  let cfIndex = 0; // pointer to current cashflow
+
+  const result: { date: Date; index: number }[] = [];
+  let prevValue = portfolioValues[0].value;
+  let index = 1; // normalized index starts at 1
+
+  result.push({ date: portfolioValues[0].date, index });
+
+  for (let i = 1; i < portfolioValues.length; i++) {
+    const currDate = portfolioValues[i].date;
+    const currValue = portfolioValues[i].value;
+
+    // Sum all cashflows between previous and current date (exclusive of currDate)
+    let cfAmount = 0;
+    while (
+      cfIndex < cashflowsSorted.length &&
+      cashflowsSorted[cfIndex].date > portfolioValues[i - 1].date &&
+      cashflowsSorted[cfIndex].date <= currDate
+    ) {
+      cfAmount += cashflowsSorted[cfIndex].value;
+      cfIndex++;
+    }
+
+    // Time-weighted subperiod return
+    const subperiodReturn = (currValue - prevValue - cfAmount) / prevValue;
+
+    // Update index
+    index = index * (1 + subperiodReturn);
+
+    result.push({ date: currDate, index });
+
+    prevValue = currValue;
+  }
+
+  return result;
+}
+
 export function getInitialInvestment(
   accountTransactions: ParsedAccountTransaction[]
 ) {
@@ -32,11 +83,6 @@ export function getDepotSum(assets: Asset[]) {
   });
   return depotSum;
 }
-
-type CashFlow = {
-  date: Date;
-  value: number;
-};
 
 function XIRR(values: number[], dates: Date[], guess: number = 0.1): number {
   // Credits: algorithm inspired by Apache OpenOffice
@@ -110,7 +156,7 @@ export function calculateXIRR(
   try {
     const currentValue =
       getDepotSum(assets) + getCashPosition(accountTransactions);
-    let cashFlows: CashFlow[] = accountTransactions
+    let cashFlows: DateValue[] = accountTransactions
       .filter((tx) => tx["IBAN / Kontonummer"])
       .map((tx) => ({
         date: new Date(tx.Valuta),
@@ -144,8 +190,8 @@ export function calculateXIRR(
 
 export function getAccumulatedCashFlows(
   accountTransactions: ParsedAccountTransaction[]
-): CashFlow[] {
-  const cashFlows: CashFlow[] = [];
+): DateValue[] {
+  const cashFlows: DateValue[] = [];
   let accumulatedValue = 0;
 
   // Sort transactions for deterministic accumulation
@@ -177,8 +223,8 @@ export function getAccumulatedCashFlows(
 
 export function getAccumulatedCashPosition(
   accountTransactions: ParsedAccountTransaction[]
-): { date: Date; value: number }[] {
-  const result: { date: Date; value: number }[] = [];
+): DateValue[] {
+  const result: DateValue[] = [];
   const sortedTransactions = [...accountTransactions].sort(
     (a, b) => new Date(a.Valuta).getTime() - new Date(b.Valuta).getTime()
   );
@@ -206,11 +252,11 @@ export function getAccumulatedDepotValue(
   assets: Asset[],
   startDate: Date,
   endDate: Date
-): { date: Date; value: number | null }[] {
+): DateValue[] {
   const start = dayjs(startDate).startOf("day");
   const end = dayjs(endDate).startOf("day");
 
-  const result: { date: Date; value: number | null }[] = [];
+  const result: DateValue[] = [];
 
   const assetPriceMaps = new Map<Asset, Map<string, number>>();
   const assetQuantityByDate = new Map<Asset, Map<string, number>>();
@@ -298,9 +344,9 @@ export function getAccumulatedDepotValue(
 }
 
 export function getCombinedNetWorth(
-  cashFlowHistory: { date: Date; value: number }[],
-  depotValueHistory: { date: Date; value: number | null }[]
-): { date: Date; value: number }[] {
+  cashFlowHistory: DateValue[],
+  depotValueHistory: DateValue[]
+): DateValue[] {
 
   // Convert inputs to maps for lookup
   const cashMap = new Map<string, number>();
