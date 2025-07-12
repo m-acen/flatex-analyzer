@@ -63,7 +63,7 @@ export default function PerformancePage() {
     tickers: tickers.map((t) => t.ticker),
   });
   const accountCashFlows = getAccountCashFlows(accountTransactions, 1);
-  const [timeframe, setTimeframe] = useState<1 | 3 | 5 | "all">("all");
+  const [timeframe, setTimeframe] = useState<1 | 3 | 5 | "all">(1);
 
   const handleTimeframeChange = (
     event: React.MouseEvent<HTMLElement>,
