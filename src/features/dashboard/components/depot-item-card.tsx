@@ -17,6 +17,7 @@ import { Asset } from "../types/asset";
 import PriceHistoryChart from "./price-history-chart";
 import { green, red, blue } from "@mui/material/colors";
 import Link from "next/link";
+import { PreserveSearchParamsLink } from "@/components/preserve-search-params-link";
 
 export function LazyContent({
   checkValue,
@@ -33,7 +34,7 @@ export function LazyContent({
   return <> {children} </>;
 }
 
-export function DepotItemCard({ item }: { item: Asset }) {
+export function DepotItemCard({ item, baseUrl = "/assets" }: { item: Asset, baseUrl?: string }) {
   const currentValue = item.currentPositionValue;
 
   const netProfit =
@@ -63,7 +64,7 @@ export function DepotItemCard({ item }: { item: Asset }) {
   }));
 
   return (
-    <Link href={`/assets/${item.isin}`}>
+    <PreserveSearchParamsLink href={`${baseUrl}/${item.isin}`}>
       <Card
         sx={{
           height: "100%",
@@ -229,6 +230,6 @@ export function DepotItemCard({ item }: { item: Asset }) {
           </Stack>
         </CardContent>
       </Card>
-    </Link>
+    </PreserveSearchParamsLink>
   );
 }

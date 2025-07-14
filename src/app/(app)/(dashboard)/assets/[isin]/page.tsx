@@ -7,6 +7,7 @@ import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "next/link";
 import Typography from "@mui/material/Typography";
 import { Box } from "@mui/material";
+import { PreserveSearchParamsLink } from "@/components/preserve-search-params-link";
 
 export default function AssetPage() {
   const params = useParams();
@@ -19,11 +20,11 @@ export default function AssetPage() {
   return (
     <Box sx={{ p: 2, width: "100%" }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-        <Link href="/assets" passHref>
+        <PreserveSearchParamsLink href="/assets" passHref>
           <Typography color="inherit" component="a" sx={{ textDecoration: "none" }}>
             Assets
           </Typography>
-        </Link>
+        </PreserveSearchParamsLink>
         <Typography color="text.primary">
           {asset.name || asset.isin}
         </Typography>

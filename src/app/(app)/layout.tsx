@@ -7,14 +7,19 @@ import MiniDrawer from "@/features/dashboard/components/drawer-wrapper";
 import { RawDataProvider } from "@/features/dashboard/hooks/use-raw-transaction-data-sets";
 import { ShowValuesProvider } from "@/features/dashboard/hooks/use-show-values";
 import { Box } from "@mui/material";
-import { navItems } from "@/features/dashboard/config/nav-items";
+import { demoNavItems, navItems } from "@/features/dashboard/config/nav-items";
+import { useSearchParams } from "next/navigation";
+
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const searchParams = useSearchParams();
+  const isDemo = searchParams.get("demo") === "true";
+  const updatedNavItems = isDemo ? demoNavItems : navItems;
   return (
     <ShowValuesProvider>
       <RawDataProvider>
-        <DepotProviderWrapper>
-          <MiniDrawer navItems={navItems}>
+        <DepotProviderWrapper isDemo={isDemo}>
+          <MiniDrawer navItems={updatedNavItems}>
             <Box
               width={"100%"}
               sx={{ flexGrow: 1 }}

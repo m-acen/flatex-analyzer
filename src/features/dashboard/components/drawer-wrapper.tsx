@@ -17,16 +17,13 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 
-import { Folder, PieChart } from "@mui/icons-material";
-import {
-  MobileAuthSwitch,
-} from "@/features/auth/components/auth-switch";
-import Link from "next/link";
+import { MobileAuthSwitch } from "@/features/auth/components/auth-switch";
 import { usePathname } from "next/navigation";
 import { ColorModeToggle } from "@/components/color-mode-toggle";
 import AnalyticsIcon from "@mui/icons-material/Analytics";
 import { RepoButton } from "@/components/repo-button";
 import { useMediaQuery } from "@mui/material";
+import { demoNavItems as baseNavItems } from "../config/nav-items";
 
 const drawerWidth = 240;
 
@@ -117,7 +114,7 @@ export default function MiniDrawer({
   navItems = [],
 }: {
   children: React.ReactNode;
-  navItems?: { text: string; icon: React.ReactNode; href: string }[];
+  navItems?: typeof baseNavItems;
 }) {
   const theme = useTheme();
   const pathname = usePathname();
@@ -138,15 +135,22 @@ export default function MiniDrawer({
     >
       <DrawerHeader>
         <IconButton onClick={handleDrawerClose}>
-          {theme.direction === "rtl" ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          {theme.direction === "rtl" ? (
+            <ChevronRightIcon />
+          ) : (
+            <ChevronLeftIcon />
+          )}
         </IconButton>
       </DrawerHeader>
       <Divider />
-      <List disablePadding sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <List
+        disablePadding
+        sx={{ flex: 1, display: "flex", flexDirection: "column" }}
+      >
         {navItems.map((item) => (
           <ListItem key={item.text} disablePadding sx={{ display: "block" }}>
             <ListItemButton
-              component={Link}
+              component={item.Component}
               href={item.href}
               selected={item.href === pathname}
               onClick={mobile ? handleDrawerClose : undefined}
@@ -165,7 +169,10 @@ export default function MiniDrawer({
               >
                 {item.icon}
               </ListItemIcon>
-              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
+              <ListItemText
+                primary={item.text}
+                sx={{ opacity: open ? 1 : 0 }}
+              />
             </ListItemButton>
           </ListItem>
         ))}
@@ -203,10 +210,17 @@ export default function MiniDrawer({
           >
             {open && mobile ? <ChevronLeftIcon /> : <MenuIcon />}
           </IconButton>
-          {!mobile && <Typography variant="h6" noWrap component="div" sx={{ display: "flex", alignItems: "center", gap: 1, ml: 4 }}>
-            <AnalyticsIcon fontSize="large" color="primary" />
-            Flatex Dashboard
-          </Typography>}
+          {!mobile && (
+            <Typography
+              variant="h6"
+              noWrap
+              component="div"
+              sx={{ display: "flex", alignItems: "center", gap: 1, ml: 4 }}
+            >
+              <AnalyticsIcon fontSize="large" color="primary" />
+              Flatex Dashboard
+            </Typography>
+          )}
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <ColorModeToggle />
