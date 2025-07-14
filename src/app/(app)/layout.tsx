@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { Footer } from "@/components/footer";
 import { DepotProgressBar } from "@/features/dashboard/components/depot-progress-bar";
 import { DepotProviderWrapper } from "@/features/dashboard/components/depot-provider-wrapper";
@@ -10,8 +11,7 @@ import { Box } from "@mui/material";
 import { demoNavItems, navItems } from "@/features/dashboard/config/nav-items";
 import { useSearchParams } from "next/navigation";
 
-
-export default function Layout({ children }: { children: React.ReactNode }) {
+function LayoutContent({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const isDemo = searchParams.get("demo") === "true";
   const updatedNavItems = isDemo ? demoNavItems : navItems;
@@ -35,5 +35,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </DepotProviderWrapper>
       </RawDataProvider>
     </ShowValuesProvider>
+  );
+}
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={null}>
+      <LayoutContent>{children}</LayoutContent>
+    </Suspense>
   );
 }
