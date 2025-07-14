@@ -6,19 +6,10 @@ import { DepotProviderWrapper } from "@/features/dashboard/components/depot-prov
 import MiniDrawer from "@/features/dashboard/components/drawer-wrapper";
 import { RawDataProvider } from "@/features/dashboard/hooks/use-raw-transaction-data-sets";
 import { ShowValuesProvider } from "@/features/dashboard/hooks/use-show-values";
-import { Folder, PieChart } from "@mui/icons-material";
 import { Box } from "@mui/material";
-import InventoryIcon from '@mui/icons-material/Inventory';
-import FilePresentIcon from '@mui/icons-material/FilePresent';
-
-  const navItems = [
-    { text: "Dashboard", icon: <PieChart />, href: "/dashboard" },
-    { text: "Assets", icon: <InventoryIcon />, href: "/assets" },
-    { text: "Daten", icon: <FilePresentIcon />, href: "/data" },
-  ];
+import { navItems } from "@/features/dashboard/config/nav-items";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  
   return (
     <ShowValuesProvider>
       <RawDataProvider>

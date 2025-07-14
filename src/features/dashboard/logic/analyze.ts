@@ -2,13 +2,81 @@ import dayjs from "dayjs";
 import { ParsedAccountTransaction } from "../types/account-transaction";
 import { Asset } from "../types/asset";
 import { ISO_FORMAT } from "../utils/date-parse";
+import { isInOutGoingTransaction } from "../utils/transaction-filter";
+
+export interface DateValue {
+  date: Date;
+  value: number;
+}
+
+export function calculatePortfolioIndex(
+  portfolioValues: DateValue[],
+  cashflows: DateValue[],
+  startDate?: Date,
+  endDate?: Date
+): { date: Date; index: number }[] {
+  if (portfolioValues.length === 0) return [];
+
+  // Filter portfolioValues by date range
+  const filteredPortfolio = portfolioValues.filter(
+    (entry) =>
+      (!startDate || entry.date >= startDate) &&
+      (!endDate || entry.date <= endDate)
+  );
+  if (filteredPortfolio.length === 0) return [];
+
+  // Ensure cashflows are sorted and filtered by date range
+  const cashflowsSorted = [...cashflows]
+    .filter(
+      (cf) =>
+        (!startDate || cf.date >= startDate) &&
+        (!endDate || cf.date <= endDate)
+    )
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  let cfIndex = 0; // pointer to current cashflow
+
+  const result: { date: Date; index: number }[] = [];
+  let prevValue = filteredPortfolio[0].value;
+  let index = 1; // normalized index starts at 1
+
+  result.push({ date: filteredPortfolio[0].date, index });
+
+  for (let i = 1; i < filteredPortfolio.length; i++) {
+    const currDate = filteredPortfolio[i].date;
+    const currValue = filteredPortfolio[i].value;
+
+    // Sum all cashflows between previous and current date (exclusive of currDate)
+    let cfAmount = 0;
+    while (
+      cfIndex < cashflowsSorted.length &&
+      cashflowsSorted[cfIndex].date > filteredPortfolio[i - 1].date &&
+      cashflowsSorted[cfIndex].date <= currDate
+    ) {
+      cfAmount += cashflowsSorted[cfIndex].value;
+      cfIndex++;
+    }
+
+    // Time-weighted subperiod return
+    const subperiodReturn = (currValue - prevValue - cfAmount) / prevValue;
+
+    // Update index
+    index = index * (1 + subperiodReturn);
+
+    result.push({ date: currDate, index });
+
+    prevValue = currValue;
+  }
+
+  return result;
+}
 
 export function getInitialInvestment(
   accountTransactions: ParsedAccountTransaction[]
 ) {
   let totalInvestment = 0;
   accountTransactions.forEach((tx) => {
-    if (tx["IBAN / Kontonummer"]) totalInvestment += tx.Betrag;
+    if (isInOutGoingTransaction(tx)) totalInvestment += tx.Betrag;
   });
   return totalInvestment;
 }
@@ -32,11 +100,6 @@ export function getDepotSum(assets: Asset[]) {
   });
   return depotSum;
 }
-
-type CashFlow = {
-  date: Date;
-  value: number;
-};
 
 function XIRR(values: number[], dates: Date[], guess: number = 0.1): number {
   // Credits: algorithm inspired by Apache OpenOffice
@@ -103,6 +166,19 @@ function XIRR(values: number[], dates: Date[], guess: number = 0.1): number {
   return resultRate;
 }
 
+export function getAccountCashFlows(
+  accountTransactions: ParsedAccountTransaction[],
+  factor = -1
+) {
+  return accountTransactions
+    .filter((tx) => isInOutGoingTransaction(tx))
+    .map((tx) => ({
+      date: new Date(tx.Valuta),
+      value: tx.Betrag * factor,
+    }))
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
 export function calculateXIRR(
   accountTransactions: ParsedAccountTransaction[],
   assets: Asset[]
@@ -110,13 +186,7 @@ export function calculateXIRR(
   try {
     const currentValue =
       getDepotSum(assets) + getCashPosition(accountTransactions);
-    let cashFlows: CashFlow[] = accountTransactions
-      .filter((tx) => tx["IBAN / Kontonummer"])
-      .map((tx) => ({
-        date: new Date(tx.Valuta),
-        value: tx.Betrag * -1,
-      }))
-      .sort((a, b) => a.date.getTime() - b.date.getTime());
+    let cashFlows: DateValue[] = getAccountCashFlows(accountTransactions);
 
     if (cashFlows.length < 2) {
       console.error(
@@ -144,8 +214,8 @@ export function calculateXIRR(
 
 export function getAccumulatedCashFlows(
   accountTransactions: ParsedAccountTransaction[]
-): CashFlow[] {
-  const cashFlows: CashFlow[] = [];
+): DateValue[] {
+  const cashFlows: DateValue[] = [];
   let accumulatedValue = 0;
 
   // Sort transactions for deterministic accumulation
@@ -156,7 +226,7 @@ export function getAccumulatedCashFlows(
   const seenDates = new Set<string>();
 
   for (const tx of sortedTransactions) {
-    if (!tx["IBAN / Kontonummer"]) continue; // Skip transactions without IBAN
+    if (!isInOutGoingTransaction(tx)) continue; // Skip transactions without IBAN
     const dateKey = dayjs(tx.Valuta).format(ISO_FORMAT);
     accumulatedValue += tx.Betrag;
 
@@ -177,8 +247,8 @@ export function getAccumulatedCashFlows(
 
 export function getAccumulatedCashPosition(
   accountTransactions: ParsedAccountTransaction[]
-): { date: Date; value: number }[] {
-  const result: { date: Date; value: number }[] = [];
+): DateValue[] {
+  const result: DateValue[] = [];
   const sortedTransactions = [...accountTransactions].sort(
     (a, b) => new Date(a.Valuta).getTime() - new Date(b.Valuta).getTime()
   );
@@ -206,11 +276,11 @@ export function getAccumulatedDepotValue(
   assets: Asset[],
   startDate: Date,
   endDate: Date
-): { date: Date; value: number | null }[] {
+): DateValue[] {
   const start = dayjs(startDate).startOf("day");
   const end = dayjs(endDate).startOf("day");
 
-  const result: { date: Date; value: number | null }[] = [];
+  const result: DateValue[] = [];
 
   const assetPriceMaps = new Map<Asset, Map<string, number>>();
   const assetQuantityByDate = new Map<Asset, Map<string, number>>();
@@ -278,11 +348,17 @@ export function getAccumulatedDepotValue(
     const isMedianDay =
       date.date() === 1 || date.date() === 15 || date.isSame(end, "day");
     if (isMedianDay) {
-      const values = weekBuffer.map((entry) => entry.value).filter((v) => v > 0);
+      const values = weekBuffer
+        .map((entry) => entry.value)
+        .filter((v) => v > 0);
       const weekMedian = median(values);
 
       for (const entry of weekBuffer) {
-        if (entry.date.getDate() === 1 || entry.date.getDate() === 15 || dayjs(entry.date).isSame(end, "day")) {
+        if (
+          entry.date.getDate() === 1 ||
+          entry.date.getDate() === 15 ||
+          dayjs(entry.date).isSame(end, "day")
+        ) {
           result.push({
             date: entry.date,
             value: weekMedian,
@@ -298,10 +374,9 @@ export function getAccumulatedDepotValue(
 }
 
 export function getCombinedNetWorth(
-  cashFlowHistory: { date: Date; value: number }[],
-  depotValueHistory: { date: Date; value: number | null }[]
-): { date: Date; value: number }[] {
-
+  cashFlowHistory: DateValue[],
+  depotValueHistory: DateValue[]
+): DateValue[] {
   // Convert inputs to maps for lookup
   const cashMap = new Map<string, number>();
   for (const entry of cashFlowHistory) {

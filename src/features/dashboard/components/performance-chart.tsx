@@ -63,10 +63,28 @@ export default function PerformanceChart({
   sortedItems: Asset[];
   progress: ProgressState;
 }) {
+  const isClient = useClientOnly();
+  if (!isClient) return null;
+  return (
+    <PerformanceChartContent
+      accountTransactions={accountTransactions}
+      sortedItems={sortedItems}
+      progress={progress}
+    />
+  );
+}
+
+export function PerformanceChartContent({
+  accountTransactions,
+  sortedItems,
+  progress,
+}: {
+  accountTransactions: ParsedAccountTransaction[];
+  sortedItems: Asset[];
+  progress: ProgressState;
+}) {
   const theme = useTheme();
   const { showValues } = useShowValues();
-
-  const isClient = useClientOnly();
 
   const firstTransactionDate = accountTransactions[0]?.Buchtag;
 
@@ -188,7 +206,6 @@ export default function PerformanceChart({
     }),
     [showValues, lineSeries, theme.palette.mode, theme.palette.text.primary]
   );
-  if (!isClient) return null;
   return (
     <Chart options={options} series={apexSeries} type="area" height={350} />
   );
