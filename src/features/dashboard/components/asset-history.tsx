@@ -111,8 +111,8 @@ function AssetHistoryItem({ item }: { item: Asset }) {
   }));
 
   return (
-    <Box>
-      <Box overflow={"hidden"}>
+    <>
+      <Box width={"100%"}>
         <PriceHistoryChart
           priceHistory={item.priceHistory}
           keyEvents={[
@@ -128,7 +128,6 @@ function AssetHistoryItem({ item }: { item: Asset }) {
         />
       </Box>
       <TableContainer
-        sx={{ maxHeight: 400, overflowY: "auto" }}
         component={Paper}
       >
         <Table stickyHeader aria-label="asset history table">
@@ -154,18 +153,18 @@ function AssetHistoryItem({ item }: { item: Asset }) {
                 </TableCell>
                 <TableCell>{dayjs(row.date).format(LOCAL_FORMAT)}</TableCell>
                 <TableCell align="right">
-                  {row.rate !== undefined ? row.rate.toFixed(2) : "-"}
+                  {row.rate !== undefined ? `${row.rate.toFixed(2)} €` : "-"}
                 </TableCell>
                 <TableCell align="right">
-                  {row.quantity !== undefined ? row.quantity.toFixed(2) : "-"}
+                  {row.quantity !== undefined ? `x ${row.quantity.toFixed(2)}` : "-"}
                 </TableCell>
-                <TableCell align="right">{row.value.toFixed(2)}</TableCell>
+                <TableCell align="right">{row.value.toFixed(2)} €</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-    </Box>
+    </>
   );
 }
 

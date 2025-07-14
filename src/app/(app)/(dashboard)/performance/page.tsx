@@ -14,7 +14,6 @@ import {
   getAccumulatedCashPosition,
   getCombinedNetWorth,
   DateValue,
-  getAccumulatedCashFlows,
   getAccountCashFlows,
   calculatePortfolioIndex,
 } from "@/features/dashboard/logic/analyze";

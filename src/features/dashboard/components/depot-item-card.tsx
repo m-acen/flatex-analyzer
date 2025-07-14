@@ -14,6 +14,9 @@ import { useState } from "react";
 import AssetHistoryItem from "./asset-history";
 import ValueTypography from "./value-typography";
 import { Asset } from "../types/asset";
+import PriceHistoryChart from "./price-history-chart";
+import { green, red, blue } from "@mui/material/colors";
+import Link from "next/link";
 
 export function LazyContent({
   checkValue,
@@ -31,7 +34,6 @@ export function LazyContent({
 }
 
 export function DepotItemCard({ item }: { item: Asset }) {
-  const [open, setOpen] = useState(false);
   const currentValue = item.currentPositionValue;
 
   const netProfit =
@@ -48,12 +50,20 @@ export function DepotItemCard({ item }: { item: Asset }) {
 
   const sectorName = item.tickerData?.sectorDisp || item.tickerData?.quoteType;
 
+  const investmentEvents = item.details.investment.transactions.map((t) => ({
+    date: t.date,
+    price: t.rate,
+    type: "Buy",
+  }));
+
+  const realizedEvents = item.details.realized.transactions.map((t) => ({
+    date: t.date,
+    price: t.rate,
+    type: "Sell",
+  }));
+
   return (
-    <>
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>{item.name}</DialogTitle>
-        <AssetHistoryItem item={item} />
-      </Dialog>
+    <Link href={`/assets/${item.isin}`}>
       <Card
         sx={{
           height: "100%",
@@ -62,14 +72,29 @@ export function DepotItemCard({ item }: { item: Asset }) {
           "&:hover": { boxShadow: 6, opacity: 1 },
           opacity: item.details.quantity <= 0 ? 0.5 : 1,
         }}
-        onClick={() => {
-          setOpen(item.priceHistory != null);
-          console.log(item);
-        }}
       >
         <CardContent sx={{}}>
           <Stack spacing={1}>
-            {/* Icon + Title */}
+            <PriceHistoryChart
+              priceHistory={item.priceHistory}
+              keyEvents={[...investmentEvents, ...realizedEvents]}
+              colors={{
+                Buy: green[500],
+                Sell: red[500],
+                Dividend: blue[500],
+              }}
+              apexOptions={{
+                chart: {
+                  id: "performance-chart",
+                  toolbar: { show: false },
+                  animations: { enabled: false },
+                  background: "transparent",
+                  zoom: { enabled: false },
+                  selection: { enabled: false },
+                },
+              }}
+            />
+
             <Stack direction="column" alignItems="start">
               <Stack
                 width={"100%"}
@@ -204,6 +229,6 @@ export function DepotItemCard({ item }: { item: Asset }) {
           </Stack>
         </CardContent>
       </Card>
-    </>
+    </Link>
   );
 }

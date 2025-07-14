@@ -12,12 +12,13 @@ import type { ApexOptions } from "apexcharts";
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export type PricePoint = { date: string; price: number };
-export type KeyEvent   = { date: Date; price?: number; type: string };
+export type KeyEvent = { date: Date; price?: number; type: string };
 
 interface Props {
   priceHistory: PricePoint[];
   keyEvents?: KeyEvent[];
   colors?: Record<string, string>;
+  apexOptions?: ApexOptions;
 }
 
 /* Minimal shape needed for Apex point annotations */
@@ -38,16 +39,20 @@ export default function PriceHistoryChart({
   priceHistory,
   keyEvents = [],
   colors = {},
+  apexOptions,
 }: Props) {
   const theme = useTheme();
   const isClient = useClientOnly();
 
   /* Build chart data & annotations exactly once per prop‑change */
   const { series, annotations } = useMemo(() => {
-    if (!priceHistory.length) return { series: [], annotations: [] as PointAnnotation[] };
+    if (!priceHistory.length)
+      return { series: [], annotations: [] as PointAnnotation[] };
 
     const dates = priceHistory.map(({ date }) => new Date(date));
-    const prices = priceHistory.map(({ price }) => (price === 0 ? null : price));
+    const prices = priceHistory.map(({ price }) =>
+      price === 0 ? null : price
+    );
 
     const isoIndex = new Map(
       dates.map((d, i) => [dayjs(d).format(ISO_FORMAT), i])
@@ -60,31 +65,35 @@ export default function PriceHistoryChart({
         if (y != null) pts.push([d.getTime(), y]);
         return pts;
       }, []),
-      color: orange[300],
+      color: colors["Price"] || orange[300],
     };
 
-    const points: PointAnnotation[] = [];
-    keyEvents.forEach(({ date, price, type }) => {
+    const points: PointAnnotation[] = keyEvents.map(({ date, price, type }) => {
       const iso = dayjs(date).format(ISO_FORMAT);
       const idx = isoIndex.get(iso);
       const y = price ?? (idx !== undefined ? prices[idx] : null);
-      if (y == null) return;
-
       const color = colors[type] ?? cyan[300];
-      points.push({
+      return {
         x: new Date(date).getTime(),
         y,
-        marker: { size: 6, fillColor: color, strokeColor: theme.palette.background.paper },
+        marker: {
+          size: 6,
+          fillColor: color,
+          strokeColor: theme.palette.background.paper,
+        },
         label: {
           text: type,
           borderColor: color,
           style: {
             fontSize: "12px",
             background: theme.palette.background.paper,
-            color: theme.palette.mode === "dark" ? theme.palette.common.white : theme.palette.common.black,
+            color:
+              theme.palette.mode === "dark"
+                ? theme.palette.common.white
+                : theme.palette.common.black,
           },
         },
-      });
+      };
     });
 
     return { series: [priceSeries], annotations: points };
@@ -99,6 +108,7 @@ export default function PriceHistoryChart({
       height: CHART_HEIGHT,
       toolbar: { show: false },
       animations: { enabled: false },
+      background: "transparent",
     },
     stroke: { curve: "smooth" },
     dataLabels: { enabled: false },
@@ -112,7 +122,15 @@ export default function PriceHistoryChart({
     legend: { position: "top", horizontalAlign: "left" },
     annotations: { points: annotations },
     colors: series.map((s: any) => s.color),
+    ...apexOptions,
   };
 
-  return <Chart options={options} series={series} type="area" height={CHART_HEIGHT} />;
+  return (
+    <Chart
+      options={options}
+      series={series}
+      type="area"
+      height={CHART_HEIGHT}
+    />
+  );
 }
