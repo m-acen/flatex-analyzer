@@ -22,7 +22,7 @@ import { PieChartSwitcher } from "./pie-chart-switcher";
 import { ProgressState } from "../hooks/use-assets-calc";
 import { ParsedAccountTransaction } from "../types/account-transaction";
 import { Asset } from "../types/asset";
-import PerformanceChart from "./performance-chart";
+import GrowthChart from "./growth-chart";
 
 export function PortfolioOverview({
   accountTransactions,
@@ -67,7 +67,7 @@ export function PortfolioOverview({
         <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
           <Box>
             <Paper sx={{ p: { lg: 4, xs: 2 }, height: "100%" }}>
-              <PerformanceChart
+              <GrowthChart
                 accountTransactions={accountTransactions}
                 sortedItems={sortedItems}
                 progress={progress}

@@ -1,212 +1,198 @@
 "use client";
 
-import { useTheme } from "@mui/material";
-import { useShowValues } from "../hooks/use-show-values";
-import { ProgressState } from "../hooks/use-assets-calc";
+import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { Box, ToggleButton, ToggleButtonGroup, useTheme } from "@mui/material";
+import { ApexOptions } from "apexcharts";
+import dayjs from "dayjs";
+import { green, blue, red, cyan, orange, purple } from "@mui/material/colors";
+
+import { useDepot } from "@/features/dashboard/hooks/use-depot";
+import { ProgressState } from "@/features/dashboard/hooks/use-assets-calc";
 import {
-  getAccumulatedCashFlows,
   getAccumulatedDepotValue,
   getAccumulatedCashPosition,
   getCombinedNetWorth,
-} from "../logic/analyze";
-import { ParsedAccountTransaction } from "../types/account-transaction";
-import { Asset } from "../types/asset";
-import { useMemo } from "react";
-import { ApexOptions } from "apexcharts";
-import {
-  blue,
-  cyan,
-  green,
-  grey,
-  orange,
-  red,
-  yellow,
-} from "@mui/material/colors";
-import { useClientOnly } from "@/hooks/use-client-only";
+  DateValue,
+  getAccountCashFlows,
+  calculatePortfolioIndex,
+} from "@/features/dashboard/logic/analyze";
+import { usePriceHistory } from "@/features/dashboard/hooks/use-price-history";
+import { ISO_FORMAT } from "@/features/dashboard/utils/date-parse";
 
-import dynamic from 'next/dynamic'
+const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+// Define external tickers to include
+const tickers = [
+  { name: "S&P 500", ticker: "^GSPC" },
+  { name: "NASDAQ", ticker: "NDX" },
+  { name: "MSCI World", ticker: "EUNL.DE" },
+];
 
-function extendSeriesToEnd(
-  series: { date: Date; value: number | null }[],
-  endDate: Date
-) {
-  if (series.length === 0) return [];
+function getNormalizedDateValues(values: DateValue[]): DateValue[] {
+  if (values.length === 0) return [];
 
-  const lastValue = series[series.length - 1].value;
-  const extended = [...series];
+  const base = values[0].value;
 
-  const lastTimestamp = new Date(series[series.length - 1].date).getTime();
-  const endTimestamp = endDate.getTime();
-
-  if (lastTimestamp < endTimestamp && lastValue != null) {
-    extended.push({ date: new Date(endDate), value: lastValue });
-  }
-
-  return extended;
+  return values.map((entry, index) => ({
+    date: entry.date,
+    value: index === 0 || base === 0 ? 0 : (entry.value - base) / base,
+  }));
 }
 
-enum SeriesIds {
-  CASH_FLOWS = "cashFlows",
-  NET_WORTH = "netWorth",
-  CASH_POSITION = "cashPosition",
-  DEPOT_VALUE = "depotValue",
+function toApexSeriesData(arr: DateValue[]): [number, number | null][] {
+  return arr.map((d) => [d.date.getTime(), d.value] as [number, number | null]);
 }
 
-export default function PerformanceChart({
-  accountTransactions,
-  sortedItems,
-  progress,
-}: {
-  accountTransactions: ParsedAccountTransaction[];
-  sortedItems: Asset[];
-  progress: ProgressState;
-}) {
-  const isClient = useClientOnly();
-  if (!isClient) return null;
-  return (
-    <PerformanceChartContent
-      accountTransactions={accountTransactions}
-      sortedItems={sortedItems}
-      progress={progress}
-    />
-  );
+function timeframeToDate(timeframe: 1 | 3 | 5 | "all"): Date {
+  if (timeframe === "all") return undefined;
+  return dayjs().subtract(timeframe, "year").toDate();
 }
 
-export function PerformanceChartContent({
-  accountTransactions,
-  sortedItems,
-  progress,
-}: {
-  accountTransactions: ParsedAccountTransaction[];
-  sortedItems: Asset[];
-  progress: ProgressState;
-}) {
+export default function PerformanceChart() {
+  const { assets, accountTransactions, progress } = useDepot();
   const theme = useTheme();
-  const { showValues } = useShowValues();
 
   const firstTransactionDate = accountTransactions[0]?.Buchtag;
 
-  const cashFlows = getAccumulatedCashFlows(accountTransactions);
+  const { data: priceData, isLoading } = usePriceHistory({
+    start: dayjs(firstTransactionDate).format(ISO_FORMAT),
+    end: dayjs().format(ISO_FORMAT),
+    tickers: tickers.map((t) => t.ticker),
+  });
+  const accountCashFlows = getAccountCashFlows(accountTransactions, 1);
+  const [timeframe, setTimeframe] = useState<1 | 3 | 5 | "all">(1);
+
+  const handleTimeframeChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newValue: 1 | 3 | 5 | "all" | null
+  ) => {
+    if (newValue !== null) setTimeframe(newValue);
+  };
 
   const accumulatedDepotValue =
-    progress === ProgressState.COMPLETED
-      ? getAccumulatedDepotValue(sortedItems, firstTransactionDate, new Date())
+    progress.state === ProgressState.COMPLETED
+      ? getAccumulatedDepotValue(assets, firstTransactionDate, new Date())
       : [];
 
   const accumulatedCashPosition =
     getAccumulatedCashPosition(accountTransactions);
 
-  const accumulatedNetWorth =
-    progress === ProgressState.COMPLETED
+  const accumulatedNetWorth: DateValue[] =
+    progress.state === ProgressState.COMPLETED
       ? getCombinedNetWorth(accumulatedCashPosition, accumulatedDepotValue)
       : [];
 
-  /** helper – convert {date,value}[] to Apex xy tuple format */
-  const toSeriesData = (arr: { date: Date; value: number | null }[]) =>
-    extendSeriesToEnd(arr, new Date()).map(
-      (d) => [new Date(d.date).getTime(), d.value] as [number, number | null]
-    );
-
-  /** full list of series including styling */
-  const lineSeries = useMemo(
-    () => [
-      {
-        id: SeriesIds.CASH_FLOWS,
-        name: "Investments",
-        data: toSeriesData(cashFlows),
-        color: blue[500],
-        hidden: false,
-      },
-      {
-        id: SeriesIds.NET_WORTH,
-        name: "Net Worth",
-        data: toSeriesData(accumulatedNetWorth),
-        color: green[300],
-        hidden: false,
-      },
-      {
-        id: SeriesIds.CASH_POSITION,
-        name: "Cash Position",
-        data: toSeriesData(accumulatedCashPosition),
-        color: grey[500],
-        hidden: true,
-      },
-      {
-        id: SeriesIds.DEPOT_VALUE,
-        name: "Depot Value",
-        data: toSeriesData(accumulatedDepotValue),
-        color: cyan[300],
-        hidden: true,
-      },
-    ],
-    [
-      cashFlows,
+  const networthSeries = useMemo(() => {
+    const portfolioIndex = calculatePortfolioIndex(
       accumulatedNetWorth,
-      accumulatedCashPosition,
-      accumulatedDepotValue,
-      theme.palette,
-    ]
-  );
+      accountCashFlows,
+      timeframeToDate(timeframe),
+      new Date()
+    );
+    return toApexSeriesData(
+      portfolioIndex.map((i) => {
+        return {
+          date: i.date,
+          value: i.index - 1,
+        };
+      })
+    );
+  }, [accumulatedNetWorth, accountCashFlows, timeframe]);
 
-  const apexSeries: ApexAxisChartSeries = useMemo(
-    () => lineSeries.map(({ name, data, hidden }) => ({ name, data, hidden })),
-    [lineSeries]
-  );
+  const benchmarkSeries = useMemo(() => {
+    if (!priceData?.dates || !priceData.prices) return [];
 
-  const options: ApexOptions = useMemo(
-    () => ({
-      chart: {
-        id: "performance-chart",
-        toolbar: { show: false },
-        animations: { enabled: false },
-        background: "transparent",
+    return tickers.map(({ name, ticker }) => {
+      const priceValues: DateValue[] = priceData.dates
+        .map((dateStr, idx) => ({
+          date: new Date(dateStr),
+          value: priceData.prices[ticker]?.[idx] ?? null,
+        }))
+        .filter(
+          (d) => timeframe === "all" || d.date >= timeframeToDate(timeframe)
+        )
+        .filter((d) => d.value !== null) as DateValue[];
+
+      return {
+        name,
+        data: toApexSeriesData(getNormalizedDateValues(priceValues)),
+      };
+    });
+  }, [priceData, isLoading, timeframe]);
+
+  const options: ApexOptions = {
+    chart: {
+      id: "relative-performance-chart",
+      background: "transparent",
+      toolbar: { show: true },
+      animations: { enabled: false },
+    },
+    theme: {
+      mode: theme.palette.mode as "light" | "dark",
+    },
+    xaxis: {
+      type: "datetime",
+    },
+    yaxis: {
+      labels: {
+        formatter: (value: number) => (value * 100).toFixed(1) + "%",
       },
-      theme: {
-        mode: theme.palette.mode as "light" | "dark",
+    },
+    tooltip: {
+      x: { format: "dd MMM yyyy" },
+      y: {
+        formatter: (value: number) => (value * 100).toFixed(2) + "%",
       },
-      stroke: { curve: "smooth" },
-      xaxis: {
-        type: "datetime",
-        tooltip: { enabled: false },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      yaxis: {
-        labels: {
-          formatter: (value: number | null) =>
-            showValues && value != null ? value.toFixed(0) : "",
-        },
-      },
-      colors: lineSeries.map((s) => s.color),
-      tooltip: {
-        x: { format: "dd MMM yyyy" },
-        y: {
-          formatter: (value: number | undefined) =>
-            value != null ? value.toFixed(0) : "—",
-        },
-      },
-      legend: {
-        show: true,
-        position: "top",
-        horizontalAlign: "left",
-        fontSize: "14px",
-        labels: {
-          colors: theme.palette.text.primary,
-        },
-        onItemClick: {
-          toggleDataSeries: true,
-        },
-        onItemHover: {
-          highlightDataSeries: true,
-        },
-      },
-    }),
-    [showValues, lineSeries, theme.palette.mode, theme.palette.text.primary]
-  );
+    },
+    stroke: {
+      curve: "smooth",
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    colors: [
+      green[400],
+      blue[400],
+      red[400],
+      cyan[400],
+      orange[400],
+      purple[400],
+    ],
+    legend: {
+      show: true,
+      position: "top",
+      horizontalAlign: "left",
+    },
+  };
+
   return (
-    <Chart options={options} series={apexSeries} type="area" height={350} />
+    <Box sx={{ width: "100%", height: "100%", p: 8 }}>
+      <ToggleButtonGroup
+        orientation="horizontal"
+        value={timeframe}
+        exclusive
+        onChange={handleTimeframeChange}
+        aria-label="timeframe selection"
+        color="primary"
+        sx={{ mt: 2, mb: 4 }}
+        size="small"
+      >
+        <ToggleButton value={1}>1Y</ToggleButton>
+        <ToggleButton value={3}>3Y</ToggleButton>
+        <ToggleButton value={5}>5Y</ToggleButton>
+        <ToggleButton value="all">All</ToggleButton>
+      </ToggleButtonGroup>
+      <Chart
+        options={options}
+        series={[
+          { name: "Your Performance", data: networthSeries },
+          ...benchmarkSeries,
+        ]}
+        type="area"
+        height={350}
+        width="100%"
+      />
+    </Box>
   );
 }
