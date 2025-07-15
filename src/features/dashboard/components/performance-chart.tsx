@@ -198,7 +198,15 @@ export default function PerformanceChart() {
         options={options}
         series={[
           { name: "Your Performance", data: networthSeries },
-          { name: "Investment", data: toApexSeriesData(cashFlows) },
+          {
+            name: "Investment",
+            data: toApexSeriesData(
+              cashFlows.filter(
+                (d) =>
+                  timeframe === "all" || d.date >= timeframeToDate(timeframe)
+              )
+            ),
+          },
           ...benchmarkSeries,
         ]}
         type="area"
