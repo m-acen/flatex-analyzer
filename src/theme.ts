@@ -10,11 +10,8 @@ const theme = createTheme({
   },
   // @ts-ignore
   shadows: [
-    'none',              // shadows[0]
-    softShadow,          // shadows[1]
-    softShadow,          // shadows[2]
-    softShadow,          // shadows[3]
-    ...Array(21).fill(softShadow), // fill remaining shadows with softShadow
+    'none',
+    ...Array(24).fill(softShadow), // fill remaining shadows with softShadow
   ],
   colorSchemes: {
     light: {
