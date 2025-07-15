@@ -9,6 +9,42 @@ export interface DateValue {
   value: number;
 }
 
+export function simulatePortfolioValueGeneric(
+  priceHistory: DateValue[], // asset prices as DateValue[]
+  cashFlows: DateValue[]
+): DateValue[] {
+  // Sort cashFlows by date
+  const sortedCashFlows = cashFlows.slice().sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  // For each cashflow, find the last price before/on its date
+  const cashFlowShares = sortedCashFlows.map(cf => {
+    let idx = priceHistory.findIndex(p => p.date > cf.date);
+    if (idx === -1) idx = priceHistory.length;
+    idx = idx - 1;
+    if (idx < 0) idx = 0;
+    const price = priceHistory[idx].value;
+    return {
+      date: cf.date,
+      shares: cf.value / price,
+    };
+  });
+
+  // Accumulate shares for each price point
+  let totalShares = 0;
+  let cfIdx = 0;
+
+  return priceHistory.map((ph, i) => {
+    while (cfIdx < cashFlowShares.length && cashFlowShares[cfIdx].date <= ph.date) {
+      totalShares += cashFlowShares[cfIdx].shares;
+      cfIdx++;
+    }
+    return {
+      date: ph.date,
+      value: totalShares * ph.value,
+    };
+  });
+}
+
 export function calculatePortfolioIndex(
   portfolioValues: DateValue[],
   cashflows: DateValue[],

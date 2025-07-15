@@ -16,9 +16,12 @@ import {
   DateValue,
   getAccountCashFlows,
   calculatePortfolioIndex,
+  simulatePortfolioValueGeneric,
+  getAccumulatedCashFlows,
 } from "@/features/dashboard/logic/analyze";
 import { usePriceHistory } from "@/features/dashboard/hooks/use-price-history";
 import { ISO_FORMAT } from "@/features/dashboard/utils/date-parse";
+import { isInOutGoingTransaction } from "../utils/transaction-filter";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -83,8 +86,10 @@ export default function PerformanceChart() {
       ? getCombinedNetWorth(accumulatedCashPosition, accumulatedDepotValue)
       : [];
 
+  const cashFlows = getAccumulatedCashFlows(accountTransactions);
+
   const networthSeries = useMemo(() => {
-    const portfolioIndex = calculatePortfolioIndex(
+    /*const portfolioIndex = calculatePortfolioIndex(
       accumulatedNetWorth,
       accountCashFlows,
       timeframeToDate(timeframe),
@@ -97,6 +102,11 @@ export default function PerformanceChart() {
           value: i.index - 1,
         };
       })
+    );*/
+    return toApexSeriesData(
+      accumulatedNetWorth.filter(
+        (d) => timeframe === "all" || d.date >= timeframeToDate(timeframe)
+      )
     );
   }, [accumulatedNetWorth, accountCashFlows, timeframe]);
 
@@ -109,14 +119,15 @@ export default function PerformanceChart() {
           date: new Date(dateStr),
           value: priceData.prices[ticker]?.[idx] ?? null,
         }))
-        .filter(
-          (d) => timeframe === "all" || d.date >= timeframeToDate(timeframe)
-        )
         .filter((d) => d.value !== null) as DateValue[];
 
       return {
         name,
-        data: toApexSeriesData(getNormalizedDateValues(priceValues)),
+        data: toApexSeriesData(
+          simulatePortfolioValueGeneric(priceValues, accountCashFlows).filter(
+            (d) => timeframe === "all" || d.date >= timeframeToDate(timeframe)
+          )
+        ),
       };
     });
   }, [priceData, isLoading, timeframe]);
@@ -136,13 +147,13 @@ export default function PerformanceChart() {
     },
     yaxis: {
       labels: {
-        formatter: (value: number) => (value * 100).toFixed(1) + "%",
+        formatter: (value: number) => value.toFixed(1) + " €",
       },
     },
     tooltip: {
       x: { format: "dd MMM yyyy" },
       y: {
-        formatter: (value: number) => (value * 100).toFixed(2) + "%",
+        formatter: (value: number) => value.toFixed(2) + " €",
       },
     },
     stroke: {
@@ -187,6 +198,7 @@ export default function PerformanceChart() {
         options={options}
         series={[
           { name: "Your Performance", data: networthSeries },
+          { name: "Investment", data: toApexSeriesData(cashFlows) },
           ...benchmarkSeries,
         ]}
         type="area"
