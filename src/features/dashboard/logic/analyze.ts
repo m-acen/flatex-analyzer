@@ -272,7 +272,7 @@ export function getAccumulatedCashFlows(
         date: dayjs(tx.Valuta).toDate(),
         value: accumulatedValue,
       });
-    } else {
+    } else if (cashFlows.length > 0) {
       // Update last entry (same day, multiple transactions)
       cashFlows[cashFlows.length - 1].value = accumulatedValue;
     }
