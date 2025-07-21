@@ -46,7 +46,7 @@ export default function PriceHistoryChart({
 
   /* Build chart data & annotations exactly once per prop‑change */
   const { series, annotations } = useMemo(() => {
-    if (!priceHistory.length)
+    if (priceHistory == null || !priceHistory.length)
       return { series: [], annotations: [] as PointAnnotation[] };
 
     const dates = priceHistory.map(({ date }) => new Date(date));

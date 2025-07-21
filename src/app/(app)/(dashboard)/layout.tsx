@@ -11,7 +11,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { assets } = useDepot();
-  if (assets.length === 0) {
+  if (assets == null || assets.length === 0) {
     return <NoData />;
   }
   return <>{children}</>;
