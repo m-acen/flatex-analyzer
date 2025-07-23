@@ -1,7 +1,9 @@
 import yahooFinance from "yahoo-finance2";
 import { QuoteSearchSchema } from "../types/yahoo-finance-schemas";
+import { hardCodedIsinRemap } from "../utils/remove-known-symbol-wrappers";
 
 export async function searchSymbol(isin: string) {
+  isin = hardCodedIsinRemap(isin);
   const searchResult = await yahooFinance.search(isin, {
     region: "US",
   });
