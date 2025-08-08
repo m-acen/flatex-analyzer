@@ -106,7 +106,18 @@ export default function PriceHistoryChart({
     chart: {
       type: "area",
       height: CHART_HEIGHT,
-      toolbar: { show: false },
+      toolbar: {
+        show: true,
+        tools: {
+          download: false,
+          selection: true,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: true,
+          reset: true,
+        },
+      },
       animations: { enabled: false },
       background: "transparent",
     },

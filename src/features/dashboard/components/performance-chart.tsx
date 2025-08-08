@@ -136,7 +136,18 @@ export default function PerformanceChart() {
     chart: {
       id: "relative-performance-chart",
       background: "transparent",
-      toolbar: { show: true },
+      toolbar: {
+        show: true,
+        tools: {
+          download: false,
+          selection: true,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: true,
+          reset: true,
+        },
+      },
       animations: { enabled: false },
     },
     theme: {

@@ -24,9 +24,9 @@ import {
 } from "@mui/material/colors";
 import { useClientOnly } from "@/hooks/use-client-only";
 
-import dynamic from 'next/dynamic'
+import dynamic from "next/dynamic";
 
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 function extendSeriesToEnd(
   series: { date: Date; value: number | null }[],
@@ -159,7 +159,18 @@ export function GrowthChartContent({
     () => ({
       chart: {
         id: "performance-chart",
-        toolbar: { show: false },
+        toolbar: {
+          show: true,
+          tools: {
+            download: false,
+            selection: true,
+            zoom: true,
+            zoomin: true,
+            zoomout: true,
+            pan: true,
+            reset: true,
+          },
+        },
         animations: { enabled: false },
         background: "transparent",
       },
