@@ -51,7 +51,7 @@ function getDepotItemDetails(item: DepotItem): {
   };
 
   depotTransactions.forEach((tx) => {
-    if (tx.Buchungsinformationen.includes("ORDER Kauf")) {
+    if (tx.Buchungsinformationen.includes("ORDER Kauf") || tx.Buchungsinformationen.includes("WP-Eingang")) {
       investment.totalValue += tx.Kurs * tx.Nominal;
       investment.totalQuantity += tx.Nominal;
       investment.transactions.push({
