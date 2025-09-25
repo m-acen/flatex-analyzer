@@ -7,8 +7,6 @@ import { ParsedAccountTransaction } from "../types/account-transaction";
 import { Asset } from "../types/asset";
 import { DepotItem } from "../types/depot-item";
 import { ParsedDepotTransaction } from "../types/depot-transaction";
-import { useRawData } from "./use-raw-transaction-data-sets";
-import { generateTransactionsFromFakeDepotData } from "../utils/demo-data";
 
 function createEmptyDepotItem(tx: ParsedDepotTransaction): DepotItem {
   return {
